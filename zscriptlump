@@ -34,7 +34,10 @@ class SpawnMarineEventHandler : EventHandler
       int py = players[e.player].mo.pos.y;
       int pz = players[e.player].mo.pos.z;
   
-      int pa = p.angle;
+      int pa = Actor.Normalize180(p.angle);
+      if (pa < 0){
+        pa += 360;
+      }
       
       int dist = 50;
       int fx = px + cos(pa) * dist;
@@ -43,47 +46,35 @@ class SpawnMarineEventHandler : EventHandler
       // teleport all friends to you
       int i;
       bool spawnedAtLeastOne = false;
-      console.printf("opa "..pa);
-      int abspa = abs(pa);
-      int numTurns = abspa / 360;
-      if (pa < 0){
-        int tmp = 360 * numTurns;
-        pa = tmp + pa;
-      }else{
-        
-      }
-      //console.printf("opa "..pa);
-      
-      //console.printf("numturns "..numTurns);
-      //console.printf("rpa "..pa);
       for(i = 0; i < friends.Size(); i++){
-        if(friends[i] && friends[i].Health > 0){
-          friends[i].Teleport((fx,fy,pz), pa, 0);
-          friends[i].target = null;
-          friends[i].goal = null;
-          spawnedAtLeastOne = true;
-          friends[i].Angle = pa;
-          
-          if(pa <= 22.5 || pa >= 337.5){
-            friends[i].movedir = 0; // e
-          }else if(pa > 22.5 && pa <= 67.5){
-            friends[i].movedir = 1; // ne
-          }else if(pa > 67.5 && pa <= 112.5){
-            friends[i].movedir = 2; // n
-          }else if(pa > 112.5 && pa <= 157.5){
-            friends[i].movedir = 3; // nw
-          }else if(pa > 157.5 && pa <= 202.5){
-            friends[i].movedir = 4; // w
-          }else if(pa > 202.5 && pa <= 247.5){
-            friends[i].movedir = 5; // sw
-          }else if(pa > 247.5 && pa <= 292.5){
-            friends[i].movedir = 6; // s
-          }else if(pa > 292.5 && pa < 337.5){
-           friends[i].movedir = 7; // se
-          }
-          
-          friends[i].SetStateLabel("Spawn");
+        friends[i].Teleport((fx,fy,pz), pa, 0);
+        friends[i].target = null;
+        friends[i].goal = null;
+        spawnedAtLeastOne = true;
+
+        // set the marine's standing angle
+        friends[i].Angle = pa;
+        
+        // set their walking angle used by TryWalk() in their Spawn state
+        if(pa <= 22.5 || pa >= 337.5){
+          friends[i].movedir = 0; // e
+        }else if(pa > 22.5 && pa <= 67.5){
+          friends[i].movedir = 1; // ne
+        }else if(pa > 67.5 && pa <= 112.5){
+          friends[i].movedir = 2; // n
+        }else if(pa > 112.5 && pa <= 157.5){
+          friends[i].movedir = 3; // nw
+        }else if(pa > 157.5 && pa <= 202.5){
+          friends[i].movedir = 4; // w
+        }else if(pa > 202.5 && pa <= 247.5){
+          friends[i].movedir = 5; // sw
+        }else if(pa > 247.5 && pa <= 292.5){
+          friends[i].movedir = 6; // s
+        }else if(pa > 292.5 && pa < 337.5){
+         friends[i].movedir = 7; // se
         }
+        
+        friends[i].SetStateLabel("Spawn");
       }
       
       // spawn fog
@@ -104,7 +95,10 @@ class SpawnMarineEventHandler : EventHandler
       int px = players[e.player].mo.pos.x;
       int py = players[e.player].mo.pos.y;
       int pz = players[e.player].mo.pos.z;
-      int pa = p.angle;
+      int pa = Actor.Normalize180(p.angle);
+      if (pa < 0){
+        pa += 360;
+      }
       int dist = 50;
       int fx = px + cos(pa) * dist;
       int fy = py + sin(pa) * dist;
@@ -166,12 +160,9 @@ class SpawnMarineEventHandler : EventHandler
       }
       
       // turn our friend so he's facing away from the player
-      pa = abs(pa);
-      int numTurns = pa / 360;
-      int tmp = 360 * numTurns;
-      pa = pa - tmp;
-      
       friend.Angle = pa;
+      
+      // set their walking angle used by TryWalk() in their Spawn state
       if(pa <= 22.5 || pa >= 337.5){
         friend.movedir = 0; // e
       }else if(pa > 22.5 && pa <= 67.5){
@@ -189,26 +180,6 @@ class SpawnMarineEventHandler : EventHandler
       }else if(pa > 292.5 && pa < 337.5){
         friend.movedir = 7; // se
       }
-      
-      // wake him up and give him an item that
-      // deletes his patrolpoint when he sees his first enemy
-      //friend.Activate();
-      //friend.Activate(p);
-      //friend.GiveInventoryType("PatrolPointDeleter");
-      
-      // when spawning friend, he should walk in straight line away from player
-      // so we spawn a patrolpoint for him to go chase 
-      // once he sees an enemy, the patrolpoint will disappear and he will
-      // forget all about it
-      //dist = 5000;
-      //int tx = px + cos(pa) * dist;
-      //int ty = py + sin(pa) * dist;
-	    //pp = Actor.Spawn('PatrolPoint', (tx, ty, pz));
-      //tid = Level.FindUniqueTID();
-      //pptid = Level.FindUniqueTID();
-      //friend.changeTID(tid);
-      //pp.changeTID(pptid);
-      //Thing_SetGoal(tid, pptid, 0, 0);
 
       // store our friends in an array, so we can teleport or remove them later
       friends.Push(friend);
@@ -243,7 +214,6 @@ class whoKilledFren : EventHandler
         Event.friends.Delete(fren);
       }
       
-      //let p = players[e.player].mo;
       int fx = e.Thing.pos.x;
       int fy = e.Thing.pos.y;
       int pz = e.Thing.pos.z;
@@ -305,28 +275,8 @@ class whoKilledFren : EventHandler
           break;
       }
       
-      // turn our friend so he's facing away from the player
+      // turn our friend so he's matching the angle the friend died
       friend.Angle = pa;
-      
-      // wake him up and give him an item that
-      // deletes his patrolpoint when he sees his first enemy
-      //friend.SetStateLabel("See");
-      //friend.A_Wander(CHF_NORANDOMTURN);
-      //friend.GiveInventoryType("PatrolPointDeleter");
-      
-      // when spawning friend, he should walk in straight line away from player
-      // so we spawn a patrolpoint for him to go chase 
-      // once he sees an enemy, the patrolpoint will disappear and he will
-      // forget all about it
-      //int dist = 5000;
-      //int tx = fx + cos(pa) * dist;
-      //int ty = fy + sin(pa) * dist;	  
-	    //Event.pp = Actor.Spawn('PatrolPoint', (tx, ty, pz));
-      //Event.tid = Level.FindUniqueTID();
-      //Event.pptid = Level.FindUniqueTID();
-      //friend.changeTID(Event.tid);
-      //Event.pp.changeTID(Event.pptid);
-      //Thing_SetGoal(Event.tid, Event.pptid, 0, 0);
 
       // store our friends in an array, so we can teleport or remove them later
       Event.friends.Push(friend);
@@ -340,7 +290,6 @@ class whoKilledFren : EventHandler
     }else if(e.Thing.bIsMonster == true){
       if(e.inflictor != null && e.inflictor.getspecies() == "MarineAlly" && e.Thing.target != null){
         e.Thing.target.goal = e.thing;
-        console.printf("setting target for "..e.Thing.target.getclassname());
       }
     }
   }
@@ -358,7 +307,7 @@ class MarineAllyPistol : MarineAlly
     Spawn:
       ALY2 AABBCCDD 3
       {
-        self.TryWalk();
+        self.A_Wander(CHF_NORANDOMTURN);
       }
       ALY2 AABB 0 A_Look;
       loop;
@@ -418,7 +367,7 @@ class MarineAllyMG : MarineAlly
     Spawn:
       ALY3 AABBCCDD 3 //A_Look;
       {
-        self.TryWalk();
+        self.A_Wander(CHF_NORANDOMTURN);
       }
       ALY3 AABB 0 A_Look;
       Loop;
@@ -485,7 +434,7 @@ class MarineAllyCG : MarineAlly
     Spawn:
       ALY4 AABBCCDD 3 //A_Look;
       {
-        self.TryWalk();
+        self.A_Wander(CHF_NORANDOMTURN);
       }
       ALY4 AABB 0 A_Look;
       loop;
@@ -539,7 +488,7 @@ class MarineAllySG : MarineAlly
     Spawn:
       ALY5 AABBCCDD 3 //A_Look;
       {
-        self.TryWalk();
+        self.A_Wander(CHF_NORANDOMTURN);
       }
       ALY5 AABB 0 A_Look;
       loop;
@@ -594,7 +543,7 @@ class MarineAllyMinigun : MarineAlly
     Spawn:
       ALY6 AABBCCDD 3 //A_Look;
       {
-        self.TryWalk();
+        self.A_Wander(CHF_NORANDOMTURN);
       }
       ALY6 AABB 0 A_Look;
       loop;
@@ -708,7 +657,7 @@ class MarineAllyPlasma : MarineAlly
     Spawn:
       ALY8 AABBCCDD 3 //A_Look;
       {
-        self.TryWalk();
+        self.A_Wander(CHF_NORANDOMTURN);
       }
       ALY8 AABB 0 A_Look;
       loop;
@@ -761,7 +710,7 @@ class MarineAllyRocket : MarineAlly
     Spawn:
       ALY9 AABBCCDD 3 //A_Look;
       {
-        self.TryWalk();
+        self.A_Wander(CHF_NORANDOMTURN);
       }
       ALY9 AABB 0 A_Look;
       loop;
@@ -833,7 +782,7 @@ class MarineAllyBFG9000 : MarineAlly
     Spawn:
       AL10 AABBCCDD 3 //A_Look;
       {
-        self.TryWalk();
+        self.A_Wander(CHF_NORANDOMTURN);
       }
       AL10 AABB 0 A_Look;
       loop;
@@ -889,7 +838,7 @@ class MarineAllySSG : MarineAlly
     Spawn:
       AL11 AABBCCDD 3 //A_Look;
       {
-        self.TryWalk();
+        self.A_Wander(CHF_NORANDOMTURN);
       }
       AL11 AABB 0 A_Look;
       loop;
@@ -943,7 +892,7 @@ class MarineAllyRailgun : MarineAlly
     Spawn:
       AL12 AABBCCDD 3 //A_Look;
       {
-        self.TryWalk();
+        self.A_Wander(CHF_NORANDOMTURN);
       }
       AL12 AABB 0 A_Look;
       loop;
@@ -1002,7 +951,7 @@ class MarineAllyHSMissile : MarineAlly
     Spawn:
       AL13 AABBCCDD 3 //A_Look;
       {
-        self.TryWalk();
+        self.A_Wander(CHF_NORANDOMTURN);
       }
       AL13 AABB 0 A_Look;
       loop;
@@ -1121,7 +1070,7 @@ class MarineAllyGL : MarineAlly
     Spawn:
       AL14 AABBCCDD 3 //A_Look;
       {
-        self.TryWalk();
+        self.A_Wander(CHF_NORANDOMTURN);
       }
       AL14 AABB 0 A_Look;
       loop;
@@ -1221,7 +1170,7 @@ class MarineAllyBFG10K : MarineAlly
     Spawn:
       AL15 AABBCCDD 3 //A_Look;
       {
-        self.TryWalk();
+        self.A_Wander(CHF_NORANDOMTURN);
       }
       AL15 AABB 0 A_Look;
       loop;
@@ -1324,7 +1273,7 @@ class MarineAllyFlamethrower : MarineAlly
     Spawn:
       AL16 AABBCCDD 3 //A_Look;
       {
-        self.TryWalk();
+        self.A_Wander(CHF_NORANDOMTURN);
       }
       AL16 AABB 0 A_Look;
       loop;
@@ -1471,7 +1420,7 @@ class MarineAllySniper : MarineAlly
     Spawn:
       AL17 AABBCCDD 3 //A_Look;
       {
-        self.TryWalk();
+        self.A_Wander(CHF_NORANDOMTURN);
       }
       AL17 AABB 0 A_Look;
       loop;
