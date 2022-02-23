@@ -1,32 +1,30 @@
 version "4.8.0"
 
+#include "ENEMIES"
+
 class SpawnMarineEventHandler : EventHandler
 {
   int tid;
   int pptid;
   Actor pp;
   Array<Actor> friends;
-  Array<Actor> PPs;
   
   override void NetworkProcess (ConsoleEvent e)
   {
     if (e.Name ~== "KillMarineKeyEvent"){
-      
-      for(int i = 0; i < PPs.Size(); i++){
-        if(PPs[i] != null){
-          PPs[i].RemoveFromHash();
-          PPs[i].Destroy();
-          PPs.Delete(i);
-        }
-      }
       for(int i = 0; i < friends.Size(); i++){
-        if(friends[i] && friends[i].health > 0){
+        if(friends[i]){
+          SpawnMarineEventHandler Event;
+          Event = SpawnMarineEventHandler(EventHandler.Find("SpawnMarineEventHandler"));
+          if(Event.pp != null){
+            Event.pp.RemoveFromHash();
+            Event.pp.Destroy();
+          }
           friends[i].RemoveFromHash();
           friends[i].Destroy();
         }
       }
       friends.Clear();
-      PPs.Clear();
     }
     if (e.Name ~== "TeleportMarineKeyEvent"){
 
@@ -45,10 +43,46 @@ class SpawnMarineEventHandler : EventHandler
       // teleport all friends to you
       int i;
       bool spawnedAtLeastOne = false;
+      console.printf("opa "..pa);
+      int abspa = abs(pa);
+      int numTurns = abspa / 360;
+      if (pa < 0){
+        int tmp = 360 * numTurns;
+        pa = tmp + pa;
+      }else{
+        
+      }
+      //console.printf("opa "..pa);
+      
+      //console.printf("numturns "..numTurns);
+      //console.printf("rpa "..pa);
       for(i = 0; i < friends.Size(); i++){
         if(friends[i] && friends[i].Health > 0){
           friends[i].Teleport((fx,fy,pz), pa, 0);
+          friends[i].target = null;
+          friends[i].goal = null;
           spawnedAtLeastOne = true;
+          friends[i].Angle = pa;
+          
+          if(pa <= 22.5 || pa >= 337.5){
+            friends[i].movedir = 0; // e
+          }else if(pa > 22.5 && pa <= 67.5){
+            friends[i].movedir = 1; // ne
+          }else if(pa > 67.5 && pa <= 112.5){
+            friends[i].movedir = 2; // n
+          }else if(pa > 112.5 && pa <= 157.5){
+            friends[i].movedir = 3; // nw
+          }else if(pa > 157.5 && pa <= 202.5){
+            friends[i].movedir = 4; // w
+          }else if(pa > 202.5 && pa <= 247.5){
+            friends[i].movedir = 5; // sw
+          }else if(pa > 247.5 && pa <= 292.5){
+            friends[i].movedir = 6; // s
+          }else if(pa > 292.5 && pa < 337.5){
+           friends[i].movedir = 7; // se
+          }
+          
+          friends[i].SetStateLabel("Spawn");
         }
       }
       
@@ -57,6 +91,9 @@ class SpawnMarineEventHandler : EventHandler
       {
         friends[i-1].Teleport((fx,fy,pz), pa, 1);
       }
+      
+      Console.printf(friends.Size().." marines alive");
+      
     }
     
     if (e.Name ~== "SpawnMarineKeyEvent")
@@ -74,7 +111,147 @@ class SpawnMarineEventHandler : EventHandler
    
       // spawn our friend
       Actor friend;      
-	    switch(Random(1,17)){
+	    switch(Random(1,15)){
+        case 1:
+          friend = Actor.Spawn('MarineAllyPistol', (fx, fy, pz));
+          break;
+        case 2:
+          friend = Actor.Spawn('MarineAllyMG', (fx, fy, pz));
+          break;
+        case 3:
+          friend = Actor.Spawn('MarineAllyCG', (fx, fy, pz));
+          break;
+        case 4:
+          friend = Actor.Spawn('MarineAllySG', (fx, fy, pz));
+          break;
+        case 5:
+          friend = Actor.Spawn('MarineAllyMinigun', (fx, fy, pz));
+          break;
+        case 6:
+          friend = Actor.Spawn('MarineAllyPlasma', (fx, fy, pz));
+          break;
+        case 7:
+          friend = Actor.Spawn('MarineAllyRocket', (fx, fy, pz));
+          break;
+        case 8:
+          friend = Actor.Spawn('MarineAllyBFG9000', (fx, fy, pz));
+          break;
+        case 9:
+          friend = Actor.Spawn('MarineAllySSG', (fx, fy, pz));
+          break;
+        case 10:
+          friend = Actor.Spawn('MarineAllyRailgun', (fx, fy, pz));
+          break;
+        case 11:
+          friend = Actor.Spawn('MarineAllyHSMissile', (fx, fy, pz));
+          break;
+        case 12:
+          friend = Actor.Spawn('MarineAllyGL', (fx, fy, pz));
+          break;
+        case 13:
+          friend = Actor.Spawn('MarineAllySniper', (fx, fy, pz));
+          break;
+        case 14:
+          friend = Actor.Spawn('MarineAllyBFG10K', (fx, fy, pz));
+          break;
+        case 15:
+          friend = Actor.Spawn('MarineAllyFlamethrower', (fx, fy, pz));
+          break;
+        case 16:
+          friend = Actor.Spawn('MarineAllyFist', (fx, fy, pz));
+          break;
+        case 17:
+          friend = Actor.Spawn('MarineAllyChainsaw', (fx, fy, pz));
+          break;
+      }
+      
+      // turn our friend so he's facing away from the player
+      pa = abs(pa);
+      int numTurns = pa / 360;
+      int tmp = 360 * numTurns;
+      pa = pa - tmp;
+      
+      friend.Angle = pa;
+      if(pa <= 22.5 || pa >= 337.5){
+        friend.movedir = 0; // e
+      }else if(pa > 22.5 && pa <= 67.5){
+        friend.movedir = 1; // ne
+      }else if(pa > 67.5 && pa <= 112.5){
+        friend.movedir = 2; // n
+      }else if(pa > 112.5 && pa <= 157.5){
+        friend.movedir = 3; // nw
+      }else if(pa > 157.5 && pa <= 202.5){
+        friend.movedir = 4; // w
+      }else if(pa > 202.5 && pa <= 247.5){
+        friend.movedir = 5; // sw
+      }else if(pa > 247.5 && pa <= 292.5){
+        friend.movedir = 6; // s
+      }else if(pa > 292.5 && pa < 337.5){
+        friend.movedir = 7; // se
+      }
+      
+      // wake him up and give him an item that
+      // deletes his patrolpoint when he sees his first enemy
+      //friend.Activate();
+      //friend.Activate(p);
+      //friend.GiveInventoryType("PatrolPointDeleter");
+      
+      // when spawning friend, he should walk in straight line away from player
+      // so we spawn a patrolpoint for him to go chase 
+      // once he sees an enemy, the patrolpoint will disappear and he will
+      // forget all about it
+      //dist = 5000;
+      //int tx = px + cos(pa) * dist;
+      //int ty = py + sin(pa) * dist;
+	    //pp = Actor.Spawn('PatrolPoint', (tx, ty, pz));
+      //tid = Level.FindUniqueTID();
+      //pptid = Level.FindUniqueTID();
+      //friend.changeTID(tid);
+      //pp.changeTID(pptid);
+      //Thing_SetGoal(tid, pptid, 0, 0);
+
+      // store our friends in an array, so we can teleport or remove them later
+      friends.Push(friend);
+      Console.printf(friends.Size().." marines");
+      
+      // loop example, loops through all monsters
+      /*let it = ThinkerIterator.Create("Actor");
+      Actor mo;
+      it.Reinit();
+      while (mo = Actor(it.Next()))
+      {
+        if (mo && mo.bIsMonster && !mo.bFriendly)
+        {
+          mo.changetid(69696970);
+          mo.LookForTid(69696969);
+        }
+      }*/
+    }
+
+  }
+}
+
+class whoKilledFren : EventHandler
+{
+  override void WorldThingDied(WorldEvent e){
+    if(e.Thing.GetSpecies() == "MarineAlly" && e.Thing.bIsMonster == true) {
+    
+      SpawnMarineEventHandler Event;
+      Event = SpawnMarineEventHandler(EventHandler.Find("SpawnMarineEventHandler"));
+      int fren = Event.friends.Find(e.Thing);
+      if (fren != Event.friends.Size()){
+        Event.friends.Delete(fren);
+      }
+      
+      //let p = players[e.player].mo;
+      int fx = e.Thing.pos.x;
+      int fy = e.Thing.pos.y;
+      int pz = e.Thing.pos.z;
+      int pa = e.Thing.angle;
+   
+      // spawn our friend
+      Actor friend;      
+	    switch(Random(1,15)){
         case 1:
           friend = Actor.Spawn('MarineAllyPistol', (fx, fy, pz));
           break;
@@ -133,55 +310,38 @@ class SpawnMarineEventHandler : EventHandler
       
       // wake him up and give him an item that
       // deletes his patrolpoint when he sees his first enemy
-      friend.SetStateLabel("See");
-      friend.GiveInventoryType("PatrolPointDeleter");
+      //friend.SetStateLabel("See");
+      //friend.A_Wander(CHF_NORANDOMTURN);
+      //friend.GiveInventoryType("PatrolPointDeleter");
       
       // when spawning friend, he should walk in straight line away from player
       // so we spawn a patrolpoint for him to go chase 
       // once he sees an enemy, the patrolpoint will disappear and he will
       // forget all about it
-      dist = 5000;
-      int tx = px + cos(pa) * dist;
-      int ty = py + sin(pa) * dist;	  
-	    pp = Actor.Spawn('PatrolPoint', (tx, ty, pz));
-      tid = Level.FindUniqueTID();
-      pptid = Level.FindUniqueTID();
-      friend.changeTID(tid);
-      pp.changeTID(pptid);
-      Thing_SetGoal(tid, pptid, 0, 0);
+      //int dist = 5000;
+      //int tx = fx + cos(pa) * dist;
+      //int ty = fy + sin(pa) * dist;	  
+	    //Event.pp = Actor.Spawn('PatrolPoint', (tx, ty, pz));
+      //Event.tid = Level.FindUniqueTID();
+      //Event.pptid = Level.FindUniqueTID();
+      //friend.changeTID(Event.tid);
+      //Event.pp.changeTID(Event.pptid);
+      //Thing_SetGoal(Event.tid, Event.pptid, 0, 0);
 
       // store our friends in an array, so we can teleport or remove them later
-      friends.Push(friend);
+      Event.friends.Push(friend);
+      friend.Teleport((fx,fy,pz), pa, 1);
+      String died = e.Thing.GetClassName();
+      died.replace("MarineAlly", "");
+      String replacement = friend.GetClassName();
+      replacement.replace("MarineAlly", "");
+      console.printf("-"..died.." +"..replacement);
       
-      // loop example, loops through all monsters
-      /*let it = ThinkerIterator.Create("Actor");
-      Actor mo;
-      it.Reinit();
-      while (mo = Actor(it.Next()))
-      {
-        if (mo && mo.bIsMonster && !mo.bFriendly)
-        {
-          mo.changetid(69696970);
-          mo.LookForTid(69696969);
-        }
-      }*/
-    }
-
-  }
-}
-
-class whoKilledFren : EventHandler
-{
-  override void WorldThingDied(WorldEvent e){
-    if(e.Thing.GetSpecies() == "MarineAlly" && e.Thing.bIsMonster == true) {
-
-      console.printf(e.Thing.GetClassName().." was killed by "..e.Thing.target.GetClassName().. " using "..e.Inflictor.GetClassName());
-      SpawnMarineEventHandler Event;
-      Event = SpawnMarineEventHandler(EventHandler.Find("SpawnMarineEventHandler"));
-      int fren = Event.friends.Find(e.Thing);
-      if (fren != Event.friends.Size()){
-        Event.friends.Delete(fren);
-      }      
+    }else if(e.Thing.bIsMonster == true){
+      if(e.inflictor != null && e.inflictor.getspecies() == "MarineAlly" && e.Thing.target != null){
+        e.Thing.target.goal = e.thing;
+        console.printf("setting target for "..e.Thing.target.getclassname());
+      }
     }
   }
 }
@@ -196,14 +356,18 @@ class MarineAllyPistol : MarineAlly
   States
   {
     Spawn:
-      ALY2 AABB 5 A_Look;
+      ALY2 AABBCCDD 3
+      {
+        self.TryWalk();
+      }
+      ALY2 AABB 0 A_Look;
       loop;
     See:
       ALY2 AABBCCDD 3 A_Chase;
       //ALY2 A 0 A_CheckSight("A02Patrol");
       loop;
     A02Patrol:
-      ALY2 AABBCCDD 3 A_Wander;
+      ALY2 AABBCCDD 3 A_Wander(CHF_NORANDOMTURN);
       ALY2 A 0 A_Look;
       Loop;
     Missile:
@@ -252,7 +416,11 @@ class MarineAllyMG : MarineAlly
   States
   {
     Spawn:
-      ALY3 AABB 5 A_Look;
+      ALY3 AABBCCDD 3 //A_Look;
+      {
+        self.TryWalk();
+      }
+      ALY3 AABB 0 A_Look;
       Loop;
     See:
       ALY3 AABBCCDD 3 A_Chase;
@@ -306,16 +474,20 @@ class MarineAllyCG : MarineAlly
   Default
   {
     Health 600;
-    Speed 10;
+    //Speed 10;
     PainChance 48;
     OBITUARY "%o was caught in a Ally's Crossfire!";
     ATTACKSOUND "chainguy/attack";
-    DropItem "Chaingun";
+    //dropItem "Chaingun";
   }
   States
   {
     Spawn:
-      ALY4 AABB 5 A_Look;
+      ALY4 AABBCCDD 3 //A_Look;
+      {
+        self.TryWalk();
+      }
+      ALY4 AABB 0 A_Look;
       loop;
     See:
       ALY4 AABBCCDD 3 A_Chase;
@@ -356,16 +528,20 @@ class MarineAllySG : MarineAlly
 {
   Default
   {
-    Speed 11;
+    //Speed 11;
     PainChance 48;
     OBITUARY "%o was shot by an ally!";
     ATTACKSOUND "Shotguy/attack";
-    DropItem "Shotgun";
+    //dropItem "Shotgun";
   }
   States
   {
     Spawn:
-      ALY5 AABB 5 A_Look;
+      ALY5 AABBCCDD 3 //A_Look;
+      {
+        self.TryWalk();
+      }
+      ALY5 AABB 0 A_Look;
       loop;
     See:
       ALY5 AABBCCDD 3 A_Chase;
@@ -379,7 +555,7 @@ class MarineAllySG : MarineAlly
       ALY5 E 10 FAST A_FaceTarget; //Will look at target & try to shoot faster then usual
       ALY5 F 0 A_AlertMonsters(0, AMF_TARGETEMITTER);
       ALY5 F 3 BRIGHT A_CustomBulletAttack (5.3, 4.5, 7, 3, "MarineAllyCustomBulletPuff", 0);
-      ALY5 E 3;
+      ALY5 E 10;
       goto See;
     Pain:
       ALY5 G 5 A_Pain;
@@ -407,16 +583,20 @@ class MarineAllyMinigun : MarineAlly
   {
     Health 600;
     GibHealth -35;
-    Speed 10;
+    //Speed 10;
     PainChance 52;
     OBITUARY "%o was turned into mincemeat by an ally's Minigun!";
     ATTACKSOUND "ALMini/ALMinigun";
-    DropItem "ClipBox";
+    //dropItem "ClipBox";
   }
   States
   {
     Spawn:
-      ALY6 AABB 5 A_Look;
+      ALY6 AABBCCDD 3 //A_Look;
+      {
+        self.TryWalk();
+      }
+      ALY6 AABB 0 A_Look;
       loop;
     See:
       ALY6 AABBCCDD 3 A_Chase;
@@ -462,19 +642,19 @@ class MarineAllyChainsaw : MarineAlly
     GibHealth -45;
     Radius 20;
     Height 56;
-    Speed 18;
+    //Speed 18;
     PainChance 44;
     MeleeThreshold 64;
     MeleeRange 64;
     OBITUARY "%o was stupid enough to stand in front of a chainsaw attack!";
     SEESOUND "ALCSaw/Sight";
-    DropItem "Chainsaw";
+    //dropItem "Chainsaw";
     -AVOIDMELEE;
   }
   States
   {
     Spawn:
-      ALY7 AABB 5 A_Look;
+      ALY7 AABB 0 A_Look;
       loop;
     See: //Originally Switched Chainsaw off & Patrolled from Spawn but restarting the Chainsaw everytime is pointless
       ALY7 AA 4 A_Chase;
@@ -517,16 +697,20 @@ class MarineAllyPlasma : MarineAlly
 {
   Default
   {
-    Speed 12;
+    //Speed 12;
     PainChance 52;
     OBITUARY "%o was vapourised by friendly fire!";
     ATTACKSOUND "grunt/attack";
-    DropItem "PlasmaRifle";
+    //dropItem "PlasmaRifle";
   }
   States
   {
     Spawn:
-      ALY8 AABB 5 A_Look;
+      ALY8 AABBCCDD 3 //A_Look;
+      {
+        self.TryWalk();
+      }
+      ALY8 AABB 0 A_Look;
       loop;
     See:
       ALY8 AABBCCDD 3 A_Chase;
@@ -539,9 +723,9 @@ class MarineAllyPlasma : MarineAlly
     Missile:
       ALY8 E 10 A_FaceTarget;
       TNT1 A 0 A_FaceTarget;
-      ALY8 F 4 BRIGHT A_SpawnProjectile("MarineAllyCustomPlasmaBall");
+      ALY8 F 1 BRIGHT A_SpawnProjectile("MarineAllyCustomPlasmaBall");
       ALY8 F 0 A_AlertMonsters(0, AMF_TARGETEMITTER);
-      ALY8 E 4 A_SpidRefire;
+      ALY8 E 1 A_MonsterRefire(0, "See");
       goto Missile+2;
     Pain:
       ALY8 G 5 A_Pain;
@@ -567,15 +751,19 @@ class MarineAllyRocket : MarineAlly
   Default
   {
     Health 600;
-    Speed 9;
+    //Speed 9;
     PainChance 54;
     OBITUARY "%o was blown up after an ally's rocket exploded!";
-    DropItem "RocketLauncher";
+    //dropItem "RocketLauncher";
   }
   States
   {
     Spawn:
-      ALY9 AABB 5 A_Look;
+      ALY9 AABBCCDD 3 //A_Look;
+      {
+        self.TryWalk();
+      }
+      ALY9 AABB 0 A_Look;
       loop;
     See:
       ALY9 AABBCCDD 3 A_Chase;
@@ -635,15 +823,19 @@ class MarineAllyBFG9000 : MarineAlly
   {
     Health 1000;
     GibHealth -45;
-    Speed 8;
+    //Speed 8;
     PainChance 52;
     OBITUARY "%o was wiped out by a BFG Blast!";
-    DropItem "BFG9000";
+    //dropItem "BFG9000";
   }
   States
   {
     Spawn:
-      AL10 AABB 5 A_Look;
+      AL10 AABBCCDD 3 //A_Look;
+      {
+        self.TryWalk();
+      }
+      AL10 AABB 0 A_Look;
       loop;
     See:
       AL10 AABBCCDD 3 A_Chase;
@@ -686,16 +878,20 @@ class MarineAllySSG : MarineAlly
   Default
   {
     Health 600;
-    Speed 10;
+    //Speed 10;
     PainChance 52;
     OBITUARY "%o was blown in two by an ally's Super-Shotgun!";
     ATTACKSOUND "ALSSG/Fire";
-    DropItem "SuperShotgun";
+    //dropItem "SuperShotgun";
   }
   States
   {
     Spawn:
-      AL11 AABB 5 A_Look;
+      AL11 AABBCCDD 3 //A_Look;
+      {
+        self.TryWalk();
+      }
+      AL11 AABB 0 A_Look;
       loop;
     See:
       AL11 AABBCCDD 3 A_Chase;
@@ -737,15 +933,19 @@ class MarineAllyRailgun : MarineAlly
   Default
   {
     Health 600;
-    Speed 12;
+    //Speed 12;
     OBITUARY "%o was railed by a marine.";
     AttackSound "weapons/railgf";
-    Dropitem "Cell";
+    //dropitem "Cell";
   }
   States
   {
     Spawn:
-      AL12 AABB 5 A_Look;
+      AL12 AABBCCDD 3 //A_Look;
+      {
+        self.TryWalk();
+      }
+      AL12 AABB 0 A_Look;
       loop;
     See:
       AL12 AABBCCDD 3 A_Chase;
@@ -791,16 +991,20 @@ class MarineAllyHSMissile : MarineAlly
 {
   Default
   {
-    Speed 9;
+    //Speed 9;
     PainChance 52;
     OBITUARY "Your Ally's homing missile hit the wrong target!";
-    DropItem "RocketAmmo", 256;
-    DropItem "RocketLauncher", 128;
+    //dropItem "RocketAmmo", 256;
+    //dropItem "RocketLauncher", 128;
   }
   States
   {
     Spawn:
-      AL13 AABB 5 A_Look;
+      AL13 AABBCCDD 3 //A_Look;
+      {
+        self.TryWalk();
+      }
+      AL13 AABB 0 A_Look;
       loop;
     See:
       AL13 AABBCCDD 3 A_Chase;
@@ -906,15 +1110,20 @@ class MarineAllyGL : MarineAlly
   {
     Health 600;
     GibHealth -45;
-    Speed 12;
+    //Speed 12;
     PainChance 96;
+    MaxTargetRange 256;
     OBITUARY "%o was blown up by a marine's grenade.";
-    DropItem "RocketAmmo";
+    //dropItem "RocketAmmo";
   }
   States
   {
     Spawn:
-      AL14 AABB 5 A_Look;
+      AL14 AABBCCDD 3 //A_Look;
+      {
+        self.TryWalk();
+      }
+      AL14 AABB 0 A_Look;
       loop;
     See:
       AL14 AABBCCDD 3 A_Chase;
@@ -979,6 +1188,8 @@ class MarineGrenade : Actor
     +LOWGRAVITY
     +ROCKETTRAIL
     +MTHRUSPECIES
+    +THRUSPECIES
+    +ALLOWTHRUFLAGS
   }
   States
   {
@@ -1000,15 +1211,19 @@ class MarineAllyBFG10K : MarineAlly
   Default
   {
     Health 800;
-    Speed 8;
+    //Speed 8;
     PainChance 76;
     OBITUARY "%o was wiped out by manic BFG Blasts!";
-    DropItem "Cellpack"; //Add the BFG-10K if you have one
+    //dropItem "Cellpack"; //Add the BFG-10K if you have one
   }
   States
   {
     Spawn:
-      AL15 AABB 5 A_Look;
+      AL15 AABBCCDD 3 //A_Look;
+      {
+        self.TryWalk();
+      }
+      AL15 AABB 0 A_Look;
       loop;
     See:
       AL15 AABBCCDD 3 A_Chase;
@@ -1095,7 +1310,7 @@ class MarineAllyFlamethrower : MarineAlly
 {
   Default
   {
-    Speed 9;
+    //Speed 9;
     PainChance 76;
     OBITUARY "%o was toasted by an Ally's Flamethrower!";
     attacksound "Marine/flamer";
@@ -1107,7 +1322,11 @@ class MarineAllyFlamethrower : MarineAlly
   States
   {
     Spawn:
-      AL16 AABB 5 A_Look;
+      AL16 AABBCCDD 3 //A_Look;
+      {
+        self.TryWalk();
+      }
+      AL16 AABB 0 A_Look;
       loop;
     See:
       AL16 AABBCCDD 3 A_Chase;
@@ -1250,7 +1469,11 @@ class MarineAllySniper : MarineAlly
   States
   {
     Spawn:
-      AL17 AABB 5 A_Look;
+      AL17 AABBCCDD 3 //A_Look;
+      {
+        self.TryWalk();
+      }
+      AL17 AABB 0 A_Look;
       loop;
     See:
       AL17 AABBCCDD 3 A_Chase;
@@ -1304,7 +1527,7 @@ class MarineAllySniper : MarineAlly
     Height 5;
     Radius 8;
     //Damage Random(80, 160);
-    Speed 90;
+    //Speed 90;
     Projectile;
     Species "MarineAlly";
     DamageType "MarineAlly";
@@ -1369,8 +1592,8 @@ class CaptiveAlly : SwitchableDecoration
     Mass 9001;
     PAINSOUND "Ally/Pain";
     DEATHSOUND "Ally/Death";
-    DropItem "Stimpack";
-    DropItem "Stimpack";
+    //dropItem "Stimpack";
+    //dropItem "Stimpack";
     +SOLID
     +SHOOTABLE
     +USESPECIAL //Please read CAPTIVES for more info on setting Captives up.
@@ -1447,14 +1670,14 @@ class MarineAlly : Actor {
     GibHealth -45;
     Radius 20;
     Height 56;
-    Speed 15;
+    Speed 30;
     PainChance 64;
     SEESOUND "Ally/Site";
     ATTACKSOUND "ALPist/FIRE";
     PAINSOUND "Ally/Pain";
     DEATHSOUND "Ally/Death";
     ACTIVESOUND "Ally/Active";
-    DropItem "Clip";
+    //dropItem "Clip";
     Decal "BulletChip";
     MaxTargetRange 2048;
     MaxStepHeight 32;
@@ -1569,7 +1792,7 @@ class MarineAllyFist : MarineAlly
   Default
   {
     Health 800;
-    Speed 30;
+    //Speed 30;
     PainChance 34;
     OBITUARY "%o was punched in the face!";
     MeleeThreshold 64;
@@ -1581,7 +1804,7 @@ class MarineAllyFist : MarineAlly
   States
   {
     Spawn: //Spawn & Wait like standard Monsters
-      ALY1 AABB 5 A_Look;
+      ALY1 AABB 0 A_Look;
       loop;
     See:
       ALY1 AABBCCDD 3 A_Chase;
@@ -1631,7 +1854,7 @@ class MarineAllyFist : MarineAlly
   }
 }
 
-class PatrolPointDeleter : Inventory
+/*class PatrolPointDeleter : Inventory
 {
   override void DoEffect()
   {    
@@ -1642,7 +1865,7 @@ class PatrolPointDeleter : Inventory
       if(Event)
       {
         owner.goal = null;
-        if(Event.pp != null)
+        /*if(Event.pp != null)
         {
           Event.pp.RemoveFromHash();
           Event.pp.Destroy();
@@ -1650,5 +1873,11 @@ class PatrolPointDeleter : Inventory
         owner.setInventory("PatrolPointDeleter", 0);
       }
     }
+  }
+}*/
+
+class MyDoomGuy : DoomPlayer {
+  Default{
+    +THRUACTORS
   }
 }
