@@ -1,0 +1,442 @@
+class EnemyArachnotron : Arachnotron replaces Arachnotron{
+  Default{
+    Species "NotFriend";
+    DamageType "NotFriend";
+    DamageFactor "NotFriend", 0.0;
+  }
+}
+class EnemyArchvile : Archvile replaces Archvile{
+  Default{
+    Species "NotFriend";
+    DamageType "NotFriend";
+    DamageFactor "NotFriend", 0.0;
+  }
+}
+class EnemyBaronOfHell : BaronOfHell replaces BaronOfHell{
+  Default{
+    Species "NotFriend";
+    DamageType "NotFriend";
+    DamageFactor "NotFriend", 0.0;
+  }
+}
+class EnemyBetaSkull : BetaSkull replaces BetaSkull{
+  Default{
+    Species "NotFriend";
+    DamageType "NotFriend";
+    DamageFactor "NotFriend", 0.0;
+  }
+}
+class EnemyBossBrain : BossBrain replaces BossBrain{
+  Default{
+    Species "NotFriend";
+    DamageType "NotFriend";
+    DamageFactor "NotFriend", 0.0;
+  }
+}
+class EnemyBossEye : BossEye replaces BossEye{
+  Default{
+    Species "NotFriend";
+    DamageType "NotFriend";
+    DamageFactor "NotFriend", 0.0;
+  }
+}
+class EnemyCacodemon : Cacodemon replaces Cacodemon{
+  Default{
+    Species "NotFriend";
+    DamageType "NotFriend";
+    DamageFactor "NotFriend", 0.0;
+  }
+}
+class EnemyChaingunGuy : ChaingunGuy replaces ChaingunGuy{
+  Default{
+    Species "NotFriend";
+    DamageType "NotFriend";
+    DamageFactor "NotFriend", 0.0;
+  }
+}
+class EnemyCommanderKeen : CommanderKeen replaces CommanderKeen{
+  Default{
+    Species "NotFriend";
+    DamageType "NotFriend";
+    DamageFactor "NotFriend", 0.0;
+  }
+}
+class EnemyCyberdemon : Cyberdemon replaces Cyberdemon{
+  Default{
+    Species "NotFriend";
+    DamageType "NotFriend";
+    DamageFactor "NotFriend", 0.0;
+  }
+}
+class EnemyDemon : Demon replaces Demon{
+  Default{
+    Species "NotFriend";
+    DamageType "NotFriend";
+    DamageFactor "NotFriend", 0.0;
+  }
+}
+class EnemyDoomImp : DoomImp replaces DoomImp{
+  Default{
+    Species "NotFriend";
+    DamageType "NotFriend";
+    DamageFactor "NotFriend", 0.0;
+  }
+}
+class EnemyFatso : Fatso replaces Fatso{
+  Default{
+    Species "NotFriend";
+    DamageType "NotFriend";
+    DamageFactor "NotFriend", 0.0;
+  }
+}
+class EnemyHellKnight : HellKnight replaces HellKnight{
+  Default{
+    Species "NotFriend";
+    DamageType "NotFriend";
+    DamageFactor "NotFriend", 0.0;
+  }
+}
+class EnemyLostSoul : LostSoul replaces LostSoul{
+  Default{
+    Species "NotFriend";
+    DamageType "NotFriend";
+    DamageFactor "NotFriend", 0.0;
+    +DONTHARMCLASS
+  }
+  
+  override override bool Slam(Actor victim)
+  {
+    bSkullFly = false;
+    vel = (0, 0, 0);
+    if (health > 0)
+    {
+      if (!bDormant)
+      {
+        int dam = GetMissileDamage (7, 1);
+        int newdam = victim.DamageMobj (self, self, dam, "NotFriend");
+        victim.TraceBleed (newdam > 0 ? newdam : dam, self);
+        // The charging monster may have died by the target's actions here.
+        if (health > 0)
+        {
+          if (SeeState != NULL && !bRetargetAfterSlam){
+            SetState (SeeState);
+          }else{
+            SetIdle();
+          }
+        }
+      }
+      else
+      {
+        SetIdle();
+        tics = -1;
+      }
+    }
+    return false;			// stop moving
+  }
+}
+class EnemyMarineBerserk : MarineBerserk replaces MarineBerserk{
+  Default{
+    Species "NotFriend";
+    DamageType "NotFriend";
+    DamageFactor "NotFriend", 0.0;
+  }
+}
+class EnemyMarineBFG : MarineBFG replaces MarineBFG{
+  Default{
+    Species "NotFriend";
+    DamageType "NotFriend";
+    DamageFactor "NotFriend", 0.0;
+  }
+}
+class EnemyMarineChaingun : MarineChaingun replaces MarineChaingun{
+  Default{
+    Species "NotFriend";
+    DamageType "NotFriend";
+    DamageFactor "NotFriend", 0.0;
+  }
+}
+class EnemyMarineChainsaw : MarineChainsaw replaces MarineChainsaw{
+  Default{
+    Species "NotFriend";
+    DamageType "NotFriend";
+    DamageFactor "NotFriend", 0.0;
+  }
+}
+class EnemyMarineFist : MarineFist replaces MarineFist{
+  Default{
+    Species "NotFriend";
+    DamageType "NotFriend";
+    DamageFactor "NotFriend", 0.0;
+  }
+}
+class EnemyMarinePistol : MarinePistol replaces MarinePistol{
+  Default{
+    Species "NotFriend";
+    DamageType "NotFriend";
+    DamageFactor "NotFriend", 0.0;
+  }
+}
+class EnemyMarinePlasma : MarinePlasma replaces MarinePlasma{
+  Default{
+    Species "NotFriend";
+    DamageType "NotFriend";
+    DamageFactor "NotFriend", 0.0;
+  }
+}
+class EnemyMarineRailgun : MarineRailgun replaces MarineRailgun{
+  Default{
+    Species "NotFriend";
+    DamageType "NotFriend";
+    DamageFactor "NotFriend", 0.0;
+  }
+}
+class EnemyMarineRocket : MarineRocket replaces MarineRocket{
+  Default{
+    Species "NotFriend";
+    DamageType "NotFriend";
+    DamageFactor "NotFriend", 0.0;
+  }
+}
+class EnemyMarineShotgun : MarineShotgun replaces MarineShotgun{
+  Default{
+    Species "NotFriend";
+    DamageType "NotFriend";
+    DamageFactor "NotFriend", 0.0;
+  }
+}
+class EnemyMarineSSG : MarineSSG replaces MarineSSG{
+  Default{
+    Species "NotFriend";
+    DamageType "NotFriend";
+    DamageFactor "NotFriend", 0.0;
+  }
+}
+class EnemyMBFHelperDog : MBFHelperDog replaces MBFHelperDog{
+  Default{
+    Species "NotFriend";
+    DamageType "NotFriend";
+    DamageFactor "NotFriend", 0.0;
+  }
+}
+class EnemyPainElemental : PainElemental replaces PainElemental{
+  Default{
+    Species "NotFriend";
+    DamageType "NotFriend";
+    DamageFactor "NotFriend", 0.0;
+  }
+}
+class EnemyRevenant : Revenant replaces Revenant{
+  Default{
+    Species "NotFriend";
+    DamageType "NotFriend";
+    DamageFactor "NotFriend", 0.0;
+  }
+}
+class EnemyScriptedMarine : ScriptedMarine replaces ScriptedMarine{
+  Default{
+    Species "NotFriend";
+    DamageType "NotFriend";
+    DamageFactor "NotFriend", 0.0;
+  }
+}
+class EnemyShotgunGuy : ShotgunGuy replaces ShotgunGuy{
+  Default{
+    Species "NotFriend";
+    DamageType "NotFriend";
+    DamageFactor "NotFriend", 0.0;
+  }
+}
+class EnemySpectre : Spectre replaces Spectre{
+  Default{
+    Species "NotFriend";
+    DamageType "NotFriend";
+    DamageFactor "NotFriend", 0.0;
+  }
+}
+class EnemySpiderMastermind : SpiderMastermind replaces SpiderMastermind{
+  Default{
+    Species "NotFriend";
+    DamageType "NotFriend";
+    DamageFactor "NotFriend", 0.0;
+  }
+}
+class EnemyStealthArachnotron : StealthArachnotron replaces StealthArachnotron{
+  Default{
+    Species "NotFriend";
+    DamageType "NotFriend";
+    DamageFactor "NotFriend", 0.0;
+  }
+}
+class EnemyStealthArchvile : StealthArchvile replaces StealthArchvile{
+  Default{
+    Species "NotFriend";
+    DamageType "NotFriend";
+    DamageFactor "NotFriend", 0.0;
+  }
+}
+class EnemyStealthBaron : StealthBaron replaces StealthBaron{
+  Default{
+    Species "NotFriend";
+    DamageType "NotFriend";
+    DamageFactor "NotFriend", 0.0;
+  }
+}
+class EnemyStealthCacodemon : StealthCacodemon replaces StealthCacodemon{
+  Default{
+    Species "NotFriend";
+    DamageType "NotFriend";
+    DamageFactor "NotFriend", 0.0;
+  }
+}
+class EnemyStealthChaingunGuy : StealthChaingunGuy replaces StealthChaingunGuy{
+  Default{
+    Species "NotFriend";
+    DamageType "NotFriend";
+    DamageFactor "NotFriend", 0.0;
+  }
+}
+class EnemyStealthDemon : StealthDemon replaces StealthDemon{
+  Default{
+    Species "NotFriend";
+    DamageType "NotFriend";
+    DamageFactor "NotFriend", 0.0;
+  }
+}
+class EnemyStealthDoomImp : StealthDoomImp replaces StealthDoomImp{
+  Default{
+    Species "NotFriend";
+    DamageType "NotFriend";
+    DamageFactor "NotFriend", 0.0;
+  }
+}
+class EnemyStealthFatso : StealthFatso replaces StealthFatso{
+  Default{
+    Species "NotFriend";
+    DamageType "NotFriend";
+    DamageFactor "NotFriend", 0.0;
+  }
+}
+class EnemyStealthHellKnight : StealthHellKnight replaces StealthHellKnight{
+  Default{
+    Species "NotFriend";
+    DamageType "NotFriend";
+    DamageFactor "NotFriend", 0.0;
+  }
+}
+class EnemyStealthRevenant : StealthRevenant replaces StealthRevenant{
+  Default{
+    Species "NotFriend";
+    DamageType "NotFriend";
+    DamageFactor "NotFriend", 0.0;
+  }
+}
+class EnemyStealthShotgunGuy : StealthShotgunGuy replaces StealthShotgunGuy{
+  Default{
+    Species "NotFriend";
+    DamageType "NotFriend";
+    DamageFactor "NotFriend", 0.0;
+  }
+}
+class EnemyStealthZombieMan : StealthZombieMan replaces StealthZombieMan{
+  Default{
+    Species "NotFriend";
+    DamageType "NotFriend";
+    DamageFactor "NotFriend", 0.0;
+  }
+}
+class EnemyWolfensteinSS : WolfensteinSS replaces WolfensteinSS{
+  Default{
+    Species "NotFriend";
+    DamageType "NotFriend";
+    DamageFactor "NotFriend", 0.0;
+  }
+}
+class EnemyZombieMan : ZombieMan replaces ZombieMan{
+  Default{
+    Species "NotFriend";
+    DamageType "NotFriend";
+    DamageFactor "NotFriend", 0.0;
+  }
+}
+
+class EnemyBulletPuff : BulletPuff replaces BulletPuff{
+  Default{
+    Species "NotFriend";
+    DamageType "NotFriend";
+    DamageFactor "NotFriend", 0.0;
+    +ALLOWTHRUFLAGS
+    +MTHRUSPECIES
+  }
+}
+class EnemyRocket : Rocket replaces Rocket{
+  Default{
+    Species "NotFriend";
+    DamageType "NotFriend";
+    DamageFactor "NotFriend", 0.0;
+    +ALLOWTHRUFLAGS
+    +MTHRUSPECIES
+  }
+}
+class EnemyArachnotronPlasma : ArachnotronPlasma replaces ArachnotronPlasma{
+  Default{
+    Species "NotFriend";
+    DamageType "NotFriend";
+    DamageFactor "NotFriend", 0.0;
+    +ALLOWTHRUFLAGS
+    +MTHRUSPECIES
+  }
+}
+class EnemyArchvileFire : ArchvileFire replaces ArchvileFire{
+  Default{
+    Species "NotFriend";
+    DamageType "NotFriend";
+    DamageFactor "NotFriend", 0.0;
+    +ALLOWTHRUFLAGS
+    +MTHRUSPECIES
+  }
+}
+class EnemyBaronBall : BaronBall replaces BaronBall{
+  Default{
+    Species "NotFriend";
+    DamageType "NotFriend";
+    DamageFactor "NotFriend", 0.0;
+    +ALLOWTHRUFLAGS
+    +MTHRUSPECIES
+  }
+}
+class EnemyCacodemonBall : CacodemonBall replaces CacodemonBall{
+  Default{
+    Species "NotFriend";
+    DamageType "NotFriend";
+    DamageFactor "NotFriend", 0.0;
+    +ALLOWTHRUFLAGS
+    +MTHRUSPECIES
+  }
+}
+class EnemyDoomImpBall : DoomImpBall replaces DoomImpBall{
+  Default{
+    Species "NotFriend";
+    DamageType "NotFriend";
+    DamageFactor "NotFriend", 0.0;
+    +ALLOWTHRUFLAGS
+    +MTHRUSPECIES
+  }
+}
+class EnemyFatShot : FatShot replaces FatShot{
+  Default{
+    Species "NotFriend";
+    DamageType "NotFriend";
+    DamageFactor "NotFriend", 0.0;
+    +ALLOWTHRUFLAGS
+    +MTHRUSPECIES
+  }
+}
+class EnemyRevenantTracer : RevenantTracer replaces RevenantTracer{
+  Default{
+    Species "NotFriend";
+    DamageType "NotFriend";
+    DamageFactor "NotFriend", 0.0;
+    +ALLOWTHRUFLAGS
+    +MTHRUSPECIES
+  }
+}
