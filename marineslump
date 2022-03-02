@@ -1,297 +1,110 @@
-version "4.8.0"
+class MarineAlly : Actor {
 
-#include "ENEMIES"
-
-class SpawnMarineEventHandler : EventHandler
-{
-  int tid;
-  int pptid;
-  Actor pp;
-  Array<Actor> friends;
-  
-  override void NetworkProcess (ConsoleEvent e)
-  {
-    if (e.Name ~== "KillMarineKeyEvent"){
-      for(int i = 0; i < friends.Size(); i++){
-        if(friends[i]){
-          SpawnMarineEventHandler Event;
-          Event = SpawnMarineEventHandler(EventHandler.Find("SpawnMarineEventHandler"));
-          if(Event.pp != null){
-            Event.pp.RemoveFromHash();
-            Event.pp.Destroy();
-          }
-          friends[i].RemoveFromHash();
-          friends[i].Destroy();
-        }
-      }
-      friends.Clear();
-    }
-    if (e.Name ~== "TeleportMarineKeyEvent"){
-
-      // place marines in front of player, about 3 feet, facing away
-      let p = players[e.player].mo;
-      int px = players[e.player].mo.pos.x;
-      int py = players[e.player].mo.pos.y;
-      int pz = players[e.player].mo.pos.z;
-  
-      int pa = Actor.Normalize180(p.angle);
-      if (pa < 0){
-        pa += 360;
-      }
-      
-      int dist = 50;
-      int fx = px + cos(pa) * dist;
-      int fy = py + sin(pa) * dist;
-      
-      // teleport all friends to you
-      int i;
-      bool spawnedAtLeastOne = false;
-      for(i = 0; i < friends.Size(); i++){
-        friends[i].Teleport((fx,fy,pz), pa, 0);
-        friends[i].target = null;
-        friends[i].goal = null;
-        spawnedAtLeastOne = true;
-
-        // set the marine's standing angle
-        friends[i].Angle = pa;
-        
-        // set their walking angle used by TryWalk() in their Spawn state
-        if(pa <= 22.5 || pa >= 337.5){
-          friends[i].movedir = 0; // e
-        }else if(pa > 22.5 && pa <= 67.5){
-          friends[i].movedir = 1; // ne
-        }else if(pa > 67.5 && pa <= 112.5){
-          friends[i].movedir = 2; // n
-        }else if(pa > 112.5 && pa <= 157.5){
-          friends[i].movedir = 3; // nw
-        }else if(pa > 157.5 && pa <= 202.5){
-          friends[i].movedir = 4; // w
-        }else if(pa > 202.5 && pa <= 247.5){
-          friends[i].movedir = 5; // sw
-        }else if(pa > 247.5 && pa <= 292.5){
-          friends[i].movedir = 6; // s
-        }else if(pa > 292.5 && pa < 337.5){
-         friends[i].movedir = 7; // se
-        }
-        
-        friends[i].SetStateLabel("Spawn");
-      }
-      
-      // spawn fog
-      if(spawnedAtLeastOne)
-      {
-        friends[i-1].Teleport((fx,fy,pz), pa, 1);
-      }
-      
-      Console.printf(friends.Size().." marines alive");
-      
-    }
-    
-    if (e.Name ~== "SpawnMarineKeyEvent")
-    {    
-      // calculate marine spawn position
-      // in front of player, about 3 feet, facing away
-      let p = players[e.player].mo;
-      int px = players[e.player].mo.pos.x;
-      int py = players[e.player].mo.pos.y;
-      int pz = players[e.player].mo.pos.z;
-      int pa = Actor.Normalize180(p.angle);
-      if (pa < 0){
-        pa += 360;
-      }
-      int dist = 50;
-      int fx = px + cos(pa) * dist;
-      int fy = py + sin(pa) * dist;
-   
-      // spawn our friend
-      Actor friend;      
-	    switch(Random(1,15)){
-        case 1:
-          friend = Actor.Spawn('MarineAllyPistol', (fx, fy, pz));
-          break;
-        case 2:
-          friend = Actor.Spawn('MarineAllyMG', (fx, fy, pz));
-          break;
-        case 3:
-          friend = Actor.Spawn('MarineAllyCG', (fx, fy, pz));
-          break;
-        case 4:
-          friend = Actor.Spawn('MarineAllySG', (fx, fy, pz));
-          break;
-        case 5:
-          friend = Actor.Spawn('MarineAllyMinigun', (fx, fy, pz));
-          break;
-        case 6:
-          friend = Actor.Spawn('MarineAllyPlasma', (fx, fy, pz));
-          break;
-        case 7:
-          friend = Actor.Spawn('MarineAllyRocket', (fx, fy, pz));
-          break;
-        case 8:
-          friend = Actor.Spawn('MarineAllyBFG9000', (fx, fy, pz));
-          break;
-        case 9:
-          friend = Actor.Spawn('MarineAllySSG', (fx, fy, pz));
-          break;
-        case 10:
-          friend = Actor.Spawn('MarineAllyRailgun', (fx, fy, pz));
-          break;
-        case 11:
-          friend = Actor.Spawn('MarineAllyHSMissile', (fx, fy, pz));
-          break;
-        case 12:
-          friend = Actor.Spawn('MarineAllyGL', (fx, fy, pz));
-          break;
-        case 13:
-          friend = Actor.Spawn('MarineAllySniper', (fx, fy, pz));
-          break;
-        case 14:
-          friend = Actor.Spawn('MarineAllyBFG10K', (fx, fy, pz));
-          break;
-        case 15:
-          friend = Actor.Spawn('MarineAllyFlamethrower', (fx, fy, pz));
-          break;
-        case 16:
-          friend = Actor.Spawn('MarineAllyFist', (fx, fy, pz));
-          break;
-        case 17:
-          friend = Actor.Spawn('MarineAllyChainsaw', (fx, fy, pz));
-          break;
-      }
-      
-      // turn our friend so he's facing away from the player
-      friend.Angle = pa;
-      
-      // set their walking angle used by TryWalk() in their Spawn state
-      if(pa <= 22.5 || pa >= 337.5){
-        friend.movedir = 0; // e
-      }else if(pa > 22.5 && pa <= 67.5){
-        friend.movedir = 1; // ne
-      }else if(pa > 67.5 && pa <= 112.5){
-        friend.movedir = 2; // n
-      }else if(pa > 112.5 && pa <= 157.5){
-        friend.movedir = 3; // nw
-      }else if(pa > 157.5 && pa <= 202.5){
-        friend.movedir = 4; // w
-      }else if(pa > 202.5 && pa <= 247.5){
-        friend.movedir = 5; // sw
-      }else if(pa > 247.5 && pa <= 292.5){
-        friend.movedir = 6; // s
-      }else if(pa > 292.5 && pa < 337.5){
-        friend.movedir = 7; // se
-      }
-
-      // store our friends in an array, so we can teleport or remove them later
-      friends.Push(friend);
-      Console.printf(friends.Size().." marines");
-      
-      // loop example, loops through all monsters
-      /*let it = ThinkerIterator.Create("Actor");
-      Actor mo;
-      it.Reinit();
-      while (mo = Actor(it.Next()))
-      {
-        if (mo && mo.bIsMonster && !mo.bFriendly)
-        {
-          mo.changetid(69696970);
-          mo.LookForTid(69696969);
-        }
-      }*/
-    }
-
+  Default{
+    Species "MarineAlly";
+    DamageType "MarineAlly";
+    DamageFactor "MarineAlly", 0.0;
+    Health 400;
+    GibHealth -45;
+    Radius 20;
+    Height 56;
+    Speed 30;
+    PainChance 64;
+    SEESOUND "Ally/Site";
+    ATTACKSOUND "ALPist/FIRE";
+    PAINSOUND "Ally/Pain";
+    DEATHSOUND "Ally/Death";
+    ACTIVESOUND "Ally/Active";
+    //dropItem "Clip";
+    Decal "BulletChip";
+    MaxTargetRange 2048;
+    MaxStepHeight 32;
+    MaxDropoffHeight 64;
+    MONSTER;
+    +FLOORCLIP
+    +FRIENDLY
+    +QUICKTORETALIATE
+    +SLIDESONWALLS
+    +JUMPDOWN
+    +NODROPOFF
+    +PUSHABLE
+    +NOBLOCKMONST
+    -COUNTKILL
+    +AVOIDMELEE
+    +THRUSPECIES
+    +ALWAYSFAST
+    +MISSILEMORE
+    +MISSILEEVENMORE
+    -HARMFRIENDS
+    +DONTHARMSPECIES
   }
+
 }
 
-class whoKilledFren : EventHandler
-{
-  override void WorldThingDied(WorldEvent e){
-    if(e.Thing.GetSpecies() == "MarineAlly" && e.Thing.bIsMonster == true) {
-    
-      SpawnMarineEventHandler Event;
-      Event = SpawnMarineEventHandler(EventHandler.Find("SpawnMarineEventHandler"));
-      int fren = Event.friends.Find(e.Thing);
-      if (fren != Event.friends.Size()){
-        Event.friends.Delete(fren);
-      }
-      
-      int fx = e.Thing.pos.x;
-      int fy = e.Thing.pos.y;
-      int pz = e.Thing.pos.z;
-      int pa = e.Thing.angle;
-   
-      // spawn our friend
-      Actor friend;      
-	    switch(Random(1,15)){
-        case 1:
-          friend = Actor.Spawn('MarineAllyPistol', (fx, fy, pz));
-          break;
-        case 2:
-          friend = Actor.Spawn('MarineAllyMG', (fx, fy, pz));
-          break;
-        case 3:
-          friend = Actor.Spawn('MarineAllyCG', (fx, fy, pz));
-          break;
-        case 4:
-          friend = Actor.Spawn('MarineAllySG', (fx, fy, pz));
-          break;
-        case 5:
-          friend = Actor.Spawn('MarineAllyMinigun', (fx, fy, pz));
-          break;
-        case 6:
-          friend = Actor.Spawn('MarineAllyPlasma', (fx, fy, pz));
-          break;
-        case 7:
-          friend = Actor.Spawn('MarineAllyRocket', (fx, fy, pz));
-          break;
-        case 8:
-          friend = Actor.Spawn('MarineAllyBFG9000', (fx, fy, pz));
-          break;
-        case 9:
-          friend = Actor.Spawn('MarineAllySSG', (fx, fy, pz));
-          break;
-        case 10:
-          friend = Actor.Spawn('MarineAllyRailgun', (fx, fy, pz));
-          break;
-        case 11:
-          friend = Actor.Spawn('MarineAllyHSMissile', (fx, fy, pz));
-          break;
-        case 12:
-          friend = Actor.Spawn('MarineAllyGL', (fx, fy, pz));
-          break;
-        case 13:
-          friend = Actor.Spawn('MarineAllySniper', (fx, fy, pz));
-          break;
-        case 14:
-          friend = Actor.Spawn('MarineAllyBFG10K', (fx, fy, pz));
-          break;
-        case 15:
-          friend = Actor.Spawn('MarineAllyFlamethrower', (fx, fy, pz));
-          break;
-        case 16:
-          friend = Actor.Spawn('MarineAllyFist', (fx, fy, pz));
-          break;
-        case 17:
-          friend = Actor.Spawn('MarineAllyChainsaw', (fx, fy, pz));
-          break;
-      }
-      
-      // turn our friend so he's matching the angle the friend died
-      friend.Angle = pa;
-
-      // store our friends in an array, so we can teleport or remove them later
-      Event.friends.Push(friend);
-      friend.Teleport((fx,fy,pz), pa, 1);
-      String died = e.Thing.GetClassName();
-      died.replace("MarineAlly", "");
-      String replacement = friend.GetClassName();
-      replacement.replace("MarineAlly", "");
-      console.printf("-"..died.." +"..replacement);
-      
-    }else if(e.Thing.bIsMonster == true){
-      if(e.inflictor != null && e.inflictor.getspecies() == "MarineAlly" && e.Thing.target != null){
-        e.Thing.target.goal = e.thing;
-      }
-    }
+class MarineAllyFist : MarineAlly
+{  
+  Default
+  {
+    Health 800;
+    //Speed 30;
+    PainChance 34;
+    OBITUARY "%o was punched in the face!";
+    MeleeThreshold 64;
+    MeleeRange 64;
+    MaxStepHeight 42;
+    MaxDropoffHeight 64;
+    -AVOIDMELEE
+  }
+  States
+  {
+    Spawn: //Spawn & Wait like standard Monsters
+      ALY1 AABB 0 A_Look;
+      loop;
+    See:
+      ALY1 AABBCCDD 3 A_Chase;
+      //ALY1 A 0 A_CheckSight("A01Patrol"); //If target gets out of sight or dies after attacking, restarts patroling.
+      loop;
+    A01Patrol: //Numbered by each Marine's number to avoid "Double Defenitions"
+      ALY1 AABBCCDD 3 A_Wander;
+      ALY1 A 0 A_Look;
+      Loop;
+    Melee:
+      ALY1 E 3 A_FaceTarget;
+      ALY1 E 3 A_AlertMonsters(0, AMF_TARGETEMITTER);
+      ALY1 F 5 A_CustomMeleeAttack(random(3, 10) * 8,"Ally/PunchImpact","Ally/Fist","MarineAlly");
+      ALY1 E 5 A_Jump(64,"Missile"); //Might follow through with a jump & punch attack
+      ALY1 A 3;
+      goto See;
+    Missile:
+      ALY1 A 10 A_FaceTarget;
+      ALY1 E 3 A_AlertMonsters(0, AMF_TARGETEMITTER);
+      ALY1 A 5 A_StartSound("Ally/PunchChargeReady");
+      ALY1 E 5 A_FaceTarget;
+      ALY1 E 0 A_StartSound("Ally/PunchChargeJump");
+      ALY1 A 10 A_SkullAttack;
+      ALY1 E 5 A_Gravity;
+      ALY1 E 0 A_FaceTarget;
+      ALY1 F 5 A_CustomMeleeAttack(random(3, 10) * 8,"Ally/PunchImpact","Ally/Fist","MarineAlly");
+      ALY1 E 5 A_FaceTarget;
+      ALY1 F 5 A_CustomMeleeAttack(random(3, 10) * 8,"Ally/PunchImpact","Ally/Fist","MarineAlly");
+      goto See;
+    Pain:
+      ALY1 G 5 A_Pain;
+      ALY1 G 3;
+      goto See;
+    Death:
+      ALY1 H 3;
+      ALY1 I 3 A_Scream;
+      ALY1 J 3;
+      ALY1 KLM 5;
+      ALY1 N -1 A_NoBlocking;
+      Stop;
+    XDeath:
+      ALY1 O 5;
+      ALY1 P 5 A_XScream;
+      ALY1 QRSTUV 5;
+      ALY1 W -1 A_NoBlocking;
+      Stop;
   }
 }
 
@@ -305,18 +118,18 @@ class MarineAllyPistol : MarineAlly
   States
   {
     Spawn:
-      ALY2 AABBCCDD 3
+      ALY2 AABBCCDD 3 //A_Wander;
       {
         self.A_Wander(CHF_NORANDOMTURN);
       }
-      ALY2 AABB 0 A_Look;
+      ALY2 AABB 1 A_Look;
       loop;
     See:
       ALY2 AABBCCDD 3 A_Chase;
       //ALY2 A 0 A_CheckSight("A02Patrol");
       loop;
     A02Patrol:
-      ALY2 AABBCCDD 3 A_Wander(CHF_NORANDOMTURN);
+      //ALY2 AABBCCDD 3 A_Wander;
       ALY2 A 0 A_Look;
       Loop;
     Missile:
@@ -324,6 +137,7 @@ class MarineAllyPistol : MarineAlly
       ALY2 E 1 A_Jump(96, "10mmBurst");
       ALY2 F 0 A_AlertMonsters(0, AMF_TARGETEMITTER);
       ALY2 F 2 BRIGHT A_CustomBulletAttack(4.5,5.5,1,3,"MarineAllyCustomBulletPuff");
+      //ALY2 F 2 BRIGHT A_CustomBulletAttack(0,0,1,100,"MarineAllyCustomBulletPuff");
       ALY2 E 3;
       goto See;
     10mmBurst:
@@ -494,9 +308,9 @@ class MarineAllySG : MarineAlly
       loop;
     See:
       ALY5 AABBCCDD 3 A_Chase;
-      //ALY5 A 0 A_CheckSight("AL05Patrol");
+      //ALY5 A 0 A_CheckSight("A05Patrol");
       loop;
-    AL05Patrol:
+    A05Patrol:
       ALY5 AABBCCDD 3 A_Wander;
       ALY5 A 0 A_Look;
       loop;
@@ -504,7 +318,7 @@ class MarineAllySG : MarineAlly
       ALY5 E 10 FAST A_FaceTarget; //Will look at target & try to shoot faster then usual
       ALY5 F 0 A_AlertMonsters(0, AMF_TARGETEMITTER);
       ALY5 F 3 BRIGHT A_CustomBulletAttack (5.3, 4.5, 7, 3, "MarineAllyCustomBulletPuff", 0);
-      ALY5 E 10;
+      ALY5 E 20;
       goto See;
     Pain:
       ALY5 G 5 A_Pain;
@@ -898,7 +712,7 @@ class MarineAllyRailgun : MarineAlly
       loop;
     See:
       AL12 AABBCCDD 3 A_Chase;
-      //AA12 A 0 A_CheckSight("A12Patrol");
+      //AL12 A 0 A_CheckSight("A12Patrol");
       loop;
     A12Patrol:
       AL12 AABBCCDD 3 A_Wander;
@@ -1001,58 +815,6 @@ class MarineAllyHSMissile : MarineAlly
   }
 }
 
-class HeatSeekingMissile : Actor
-{
-  Default
-  {
-    Radius 11;
-    Height 8;
-    Speed 25;
-    Damage 50;
-    Projectile;
-    Species "MarineAlly";
-    DamageType "MarineAlly";
-    DamageFactor "MarineAlly", 0.0;
-    +SEEKERMISSILE
-    +RANDOMIZE
-    +DEHEXPLOSION
-    +ROCKETTRAIL
-    +SCREENSEEKER
-    +MTHRUSPECIES
-    SeeSound "Ally/Seeker";
-    DeathSound "Seeker/Explode";
-    Decal "Scorch";
-  }
-  States
-  {
-    Spawn:
-      HRKT A 1 bright A_SeekerMissile(9,6,SMF_LOOK|SMF_CURSPEED,50,10);
-      HRKT A 0 A_SpawnItemEx ("MissileTrail", 3, 0, 0, 1);
-      loop;
-    Death:
-      FX08 A 6 bright A_Explode(96,128);
-      FX08 BCDEFGH 4 bright;
-      Stop;
-  }
-}
-
-class MissileTrail : Actor
-{
-  Default
-  {
-    Projectile;
-    +NoClip
-    RenderStyle "Add";
-    Alpha 0.4;
-  }
-  States
-  {
-    Spawn:
-      FX04 ABCDE 1 Bright;
-      Stop;
-  }
-}
-
 class MarineAllyGL : MarineAlly
 {
   Default
@@ -1112,45 +874,6 @@ class MarineAllyGL : MarineAlly
       AL14 Q 5;
       AL14 RSTUV 5;
       AL14 W -1 A_NoBlocking;
-      Stop;
-  }
-}
-
-class MarineGrenade : Actor
-{
-  Default
-  {
-    Radius 11;
-    Height 8;
-    Speed 25;
-    Damage 30;
-    BounceType "Hexen";
-    SeeSound "Ally/GrenadeBounce";
-    DeathSound "Ally/GrenadeBang";
-    OBITUARY "%o was blown up by a marine's grenade.";
-    Scale 1;
-    PROJECTILE;
-    Species "MarineAlly";
-    DamageType "MarineAlly";
-    DamageFactor "MarineAlly", 0.0;
-    -NOGRAVITY
-    +LOWGRAVITY
-    +ROCKETTRAIL
-    +MTHRUSPECIES
-    +THRUSPECIES
-    +ALLOWTHRUFLAGS
-  }
-  States
-  {
-    Spawn:
-      MGRN A 0;
-      MGRN A 4;
-      MGRN A 24;
-      goto Death;
-    Death:
-      MISL B 8 bright A_Explode(128,96,XF_EXPLICITDAMAGETYPE,false,0,0,10,"MarineAllyCustomBulletPuff","MarineAlly");
-      MISL C 6 bright;
-      MISL D 4 bright;
       Stop;
   }
 }
@@ -1216,45 +939,6 @@ class MarineAllyBFG10K : MarineAlly
   }
 }
 
-class BFG10kMarineShot : Actor
-{
-  Default
-  {
-    Radius 14;
-    Height 8;
-    Speed 25;
-    Damage 320;
-    //DamageType "BFG10k";
-    Species "MarineAlly";
-    DamageType "MarineAlly";
-    DamageFactor "MarineAlly", 0.0;
-    +NOBLOCKMAP
-    +NOGRAVITY
-    +ACTIVATEIMPACT
-    +ACTIVATEPCROSS
-    +NOTELEPORT
-    +PUFFONACTORS
-    +PUFFGETSOWNER
-    +FORCERADIUSDMG
-    +MTHRUSPECIES
-    +THRUSPECIES
-    +ALLOWTHRUFLAGS
-    Renderstyle "Add";
-    Alpha 0.75;
-    SeeSound "marine/bfg10kx";
-    AttackSound "marine/bfg10kx";
-    DeathSound "BFG10kMarine/ShotEnd";
-  }
-  States
-  {
-    Spawn:
-      BFE1 A 0 Bright;
-      BFE1 A 3 Bright A_Detonate;
-      BFE1 BCDEF 3 Bright;
-      Stop;
-  }
-}
-
 class MarineAllyFlamethrower : MarineAlly
 {
   Default
@@ -1316,98 +1000,6 @@ class MarineAllyFlamethrower : MarineAlly
   }
 }
 
-class MarineFTFire : Actor
-{
-  Default
-  {
-    Radius 2;
-    Height 4;
-    Speed 19;
-    Damage 5;
-    PROJECTILE;
-    RENDERSTYLE "ADD";
-    //DamageType Fire
-    ALPHA 0.67;
-    Scale 0.67;
-    SeeSound "Marine/Flamer";
-    DeathSound "Marine/Scorch";
-    DONTHURTSHOOTER;
-    Species "MarineAlly";
-    DamageType "MarineAlly";
-    DamageFactor "MarineAlly", 0.0;
-    +THRUGHOST
-    +FORCERADIUSDMG
-    +MTHRUSPECIES
-  }
-  States
-  {
-    Spawn:
-      TNT1 A 2 Bright;
-      FRFX ABCD 2 Bright A_Explode(3,8);
-      FRFX D 0 Bright A_Lowgravity;
-      FRFX EFG 2 Bright A_Explode(3,16);
-      FRFX HIJ 2 Bright A_Explode(3,32);
-      FRFX KLM 2 Bright A_Explode(3,64);
-      FRFX NO 2 Bright;
-      Stop;
-    Death:
-      FRFX HIJ 2 Bright A_Explode(3,32);
-      FRFX J 0 A_SpawnProjectile("MarineDropFire");
-      FRFX KLM 2 Bright A_Explode(3,64);
-      FRFX NO 2 Bright;
-      Stop;
-  }
-}
-
-class MarineDropFire : Actor
-{
-  Default
-  {
-    Radius 8;
-    Height 40;
-    PROJECTILE;
-    RENDERSTYLE "ADD";
-    //DamageType Fire
-    ALPHA 0.90;
-    DONTHURTSHOOTER;
-    Species "MarineAlly";
-    DamageType "MarineAlly";
-    DamageFactor "MarineAlly", 0.0;
-    -NOGRAVITY
-    +LOWGRAVITY
-    +NOEXPLODEFLOOR
-    +NODAMAGETHRUST
-    +THRUGHOST
-    +MTHRUSPECIES
-  }
-  States
-  {
-    Spawn:
-      FLME A 1 Bright A_StartSound("Marine/onfire");
-      FLME A 1 Bright A_Explode(1,16);
-      FLME BCDEFGHIJKLMN 2 Bright A_Explode(1,16);
-      FLME A 1 Bright A_StartSound("Marine/onfire");
-      FLME A 1 Bright A_Explode(1,32);
-      FLME BCDEFGHIJKLMN 2 Bright A_Explode(1,16);
-      FLME A 1 Bright A_StartSound("Marine/onfire");
-      FLME A 1 Bright A_Explode(1,32);
-      FLME BCDEFGHIJKLMN 2 Bright A_Explode(1,16);
-      FLME A 1 Bright A_StartSound("Marine/onfire");
-      FLME A 1 Bright A_Explode(1,32);
-      FLME BCDEFGHIJKLMN 2 Bright A_Explode(1,16);
-      FLME A 1 Bright A_StartSound("Marine/onfire");
-      FLME A 1 Bright A_Explode(1,32);
-      FLME BCDEFGHIJKLMN 2 Bright A_Explode(1,16);
-      FLME A 0 A_Jump(192,1);
-      loop;
-      TNT1 A 0;
-      goto death;
-    Death:
-      TNT1 A 1 Bright;
-      Stop;
-  }
-}
-
 class MarineAllySniper : MarineAlly
 {
   Default
@@ -1465,368 +1057,5 @@ class MarineAllySniper : MarineAlly
       AL17 RSTUVW 5;
       AL17 X -1;
       Stop;
-  }
-}
-
-/*class MarineSniperProjectile : Actor
-{
-  Default
-  {
-    Scale 0.375;
-    Height 5;
-    Radius 8;
-    //Damage Random(80, 160);
-    //Speed 90;
-    Projectile;
-    Species "MarineAlly";
-    DamageType "MarineAlly";
-    DamageFactor "MarineAlly", 0.0;
-    +NoExtremeDeath
-    +BloodSplatter
-    +MTHRUSPECIES
-    +THRUSPECIES
-    +ALLOWTHRUFLAGS
-    Decal "Bulletchip";
-  }
-  States
-  {
-    Spawn:
-      PROJ A 1 A_SpawnItemEx("MarineSniperTrail", -(Vel.X*1.05), -(Vel.Y*1.05), (Vel.Z*-1.05), (Vel.X*0.95), (Vel.Y*0.95), (Vel.Z*0.95), -Angle, 138);
-      PROJ A 0 A_StartSound("Marine/SniperBulletloop");
-      Loop;
-    Death:
-    Crash:
-      PUFF A 0 A_StopSound(7);
-      PUFF A 0 A_StartSound("Marine/SniperWallHit", 6);
-      PUFF ABCD 4;
-      Stop;
-    XDeath:
-      TNT1 A 0 A_StopSound(7);
-      TNT1 A 1 A_StartSound("Marine/SniperFleshHit", 6);
-      Stop;
-  }
-}
-
-class MarineSniperTrail : Actor
-{
-  Default
-  {
-    +Missile
-    +NoBlockMap
-    +NoGravity
-    RenderStyle "Translucent";
-    Alpha 0.5;
-    Scale 0.5;
-    Damage 5;
-  }
-  States
-  {
-    Spawn:
-      TNT1 A 1;
-      PUFF CD 4;
-      Stop;
-    Death:
-      TNT1 A 1;
-      Stop;
-  }
-}*/
-
-class CaptiveAlly : SwitchableDecoration
-{
-  Default
-  {
-    Radius 40; //Minimum Activation distance. See CAPTIVES for more Info.
-    Height 56; //Set to match the Allied Marines for better postioning with height checks
-    Health 100;
-    Mass 9001;
-    PAINSOUND "Ally/Pain";
-    DEATHSOUND "Ally/Death";
-    //dropItem "Stimpack";
-    //dropItem "Stimpack";
-    +SOLID
-    +SHOOTABLE
-    +USESPECIAL //Please read CAPTIVES for more info on setting Captives up.
-    +FLOORCLIP
-  }
-  States
-  {
-    Spawn:
-      BDOM A 6;
-      Loop;
-    Pain:
-      BDOM A 6 A_Pain;
-    Death:
-      TNT1 A 0 A_GiveInventory("SpawnerAlly",1);
-      TNT1 A 0 A_Fall;
-      BDOM B 6 A_Scream;
-      BDOM CD 6;
-      BDOM E -1;
-      goto Inactive;
-    Active:
-      TNT1 A 0 A_JumpIfInventory("SpawnerAlly",1,"Inactive");
-      TNT1 A 0
-      {
-        bSolid = false;
-      }
-      CPTV F 10;
-      goto Freedom;
-    Inactive:
-      BDOM E -1;
-      Stop;
-    Freedom:
-      TNT1 A 0 A_GiveInventory("SpawnerAlly",1);
-      CPTV F 20 A_Jump(256,"Freedom1","Freedom2","Freedom3","Freedom4","Freedom5","Freedom6","Freedom7","Freedom8","Freedom9");
-    Freedom1:
-      TNT1 A 0 A_SpawnItemEX("MarineAllyFist",0,0,16);
-      Stop;
-    Freedom2:
-      TNT1 A 0 A_SpawnItemEX("MarineAllyPistol",0,0,16);
-      Stop;
-    Freedom3:
-      TNT1 A 0 A_SpawnItemEX("MarineAllyMG",0,0,16);
-      Stop;
-    Freedom4:
-      TNT1 A 0 A_SpawnItemEX("MarineAllyCG",0,0,16);
-      Stop;
-    Freedom5:
-      TNT1 A 0 A_SpawnItemEX("MarineAllySG",0,0,16);
-      Stop;
-    Freedom6:
-      TNT1 A 0 A_SpawnItemEX("MarineAllyMinigun",0,0,16);
-      Stop;
-    Freedom7:
-      TNT1 A 0 A_SpawnItemEX("MarineAllyChainsaw",0,0,16);
-      Stop;
-    Freedom8:
-      TNT1 A 0 A_SpawnItemEX("MarineAllyPlasma",0,0,16);
-      Stop;
-    Freedom9:
-      TNT1 A 0 A_SpawnItemEX("MarineAllySSG",0,0,16);
-      Stop;
-  }
-}
-
-class SpawnerAlly : Inventory { Default { Inventory.MaxAmount 99; } }
-//Given after Activation or on Death so you can't activate a dead Captive Marine
-
-class MarineAlly : Actor {
-
-  Default{
-    Species "MarineAlly";
-    DamageType "MarineAlly";
-    DamageFactor "MarineAlly", 0.0;
-    Health 400;
-    GibHealth -45;
-    Radius 20;
-    Height 56;
-    Speed 30;
-    PainChance 64;
-    SEESOUND "Ally/Site";
-    ATTACKSOUND "ALPist/FIRE";
-    PAINSOUND "Ally/Pain";
-    DEATHSOUND "Ally/Death";
-    ACTIVESOUND "Ally/Active";
-    //dropItem "Clip";
-    Decal "BulletChip";
-    MaxTargetRange 2048;
-    MaxStepHeight 32;
-    MaxDropoffHeight 64;
-    MONSTER;
-    +FLOORCLIP
-    +FRIENDLY
-    +QUICKTORETALIATE
-    +SLIDESONWALLS
-    +JUMPDOWN
-    +NODROPOFF
-    +PUSHABLE
-    +NOBLOCKMONST
-    -COUNTKILL
-    +AVOIDMELEE
-    +THRUSPECIES
-    +ALWAYSFAST
-    +MISSILEMORE
-    +MISSILEEVENMORE
-    -HARMFRIENDS
-    +DONTHARMSPECIES
-  }
-
-}
-
-class MarineAllyCustomBulletPuff : BulletPuff
-{
-  Default
-  {
-    Species "MarineAlly";
-    DamageType "MarineAlly";
-    DamageFactor "MarineAlly", 0.0;
-    +MTHRUSPECIES
-    +THRUSPECIES
-    +ALLOWTHRUFLAGS
-  }
-}
-
-class MarineAllyCustomRocket: Rocket
-{
-  Default
-  {
-    Species "MarineAlly";
-    DamageType "MarineAlly";
-    DamageFactor "MarineAlly", 0.0;
-    +MTHRUSPECIES
-  }
-}
-
-class MarineAllyCustomBFGBall: BFGBall
-{
-  Default
-  {
-    Species "MarineAlly";
-    DamageType "MarineAlly";
-    DamageFactor "MarineAlly", 0.0;
-    +MTHRUSPECIES
-    +THRUSPECIES
-    +ALLOWTHRUFLAGS
-    +DONTHARMSPECIES
-    -HARMFRIENDS
-  }
-  States
-	{
-    Spawn:
-      BFS1 AB 4 Bright;
-      Loop;
-    Death:
-      BFE1 AB 8 Bright;
-      BFE1 C 8 Bright A_BFGSpray;
-      BFE1 DEF 8 Bright;
-      Stop;
-	}
-}
-
-class MarineAllyCustomBFGExtra : BFGExtra replaces BFGExtra 
-{
-	Default
-	{
-		+NOBLOCKMAP
-		+NOGRAVITY
-		+ZDOOMTRANS
-    +MTHRUSPECIES
-		RenderStyle "Add";
-		Alpha 0.75;
-		DamageType "MarineAlly";
-    DamageFactor "MarineAlly", 0.0;
-    Species "MarineAlly";
-    +DONTHARMSPECIES
-	}
-	States
-	{
-	Spawn:
-		BFE2 ABCD 8 Bright;
-		Stop;
-	}
-}
-
-class MarineAllyCustomPlasmaBall: PlasmaBall
-{
-  Default
-  {
-    Species "MarineAlly";
-    DamageType "MarineAlly";
-    DamageFactor "MarineAlly", 0.0;
-    +MTHRUSPECIES
-  }
-}
-
-class MarineAllyFist : MarineAlly
-{  
-  Default
-  {
-    Health 800;
-    //Speed 30;
-    PainChance 34;
-    OBITUARY "%o was punched in the face!";
-    MeleeThreshold 64;
-    MeleeRange 64;
-    MaxStepHeight 42;
-    MaxDropoffHeight 64;
-    -AVOIDMELEE
-  }
-  States
-  {
-    Spawn: //Spawn & Wait like standard Monsters
-      ALY1 AABB 0 A_Look;
-      loop;
-    See:
-      ALY1 AABBCCDD 3 A_Chase;
-      //ALY1 A 0 A_CheckSight("A01Patrol");//If target gets out of sight or dies after attacking, restarts patroling.
-      loop;
-    A01Patrol: //Numbered by each Marine's number to avoid "Double Defenitions"
-      ALY1 AABBCCDD 3 A_Wander;
-      ALY1 A 0 A_Look;
-      Loop;
-    Melee:
-      ALY1 E 3 A_FaceTarget;
-      ALY1 E 3 A_AlertMonsters(0, AMF_TARGETEMITTER);
-      ALY1 F 5 A_CustomMeleeAttack(random(3, 10) * 8,"Ally/PunchImpact","Ally/Fist","MarineAlly");
-      ALY1 E 5 A_Jump(64,"Missile"); //Might follow through with a jump & punch attack
-      ALY1 A 3;
-      goto See;
-    Missile:
-      ALY1 A 10 A_FaceTarget;
-      ALY1 E 3 A_AlertMonsters(0, AMF_TARGETEMITTER);
-      ALY1 A 5 A_StartSound("Ally/PunchChargeReady");
-      ALY1 E 5 A_FaceTarget;
-      ALY1 E 0 A_StartSound("Ally/PunchChargeJump");
-      ALY1 A 10 A_SkullAttack;
-      ALY1 E 5 A_Gravity;
-      ALY1 E 0 A_FaceTarget;
-      ALY1 F 5 A_CustomMeleeAttack(random(3, 10) * 8,"Ally/PunchImpact","Ally/Fist","MarineAlly");
-      ALY1 E 5 A_FaceTarget;
-      ALY1 F 5 A_CustomMeleeAttack(random(3, 10) * 8,"Ally/PunchImpact","Ally/Fist","MarineAlly");
-      goto See;
-    Pain:
-      ALY1 G 5 A_Pain;
-      ALY1 G 3;
-      goto See;
-    Death:
-      ALY1 H 3;
-      ALY1 I 3 A_Scream;
-      ALY1 J 3;
-      ALY1 KLM 5;
-      ALY1 N -1 A_NoBlocking;
-      Stop;
-    XDeath:
-      ALY1 O 5;
-      ALY1 P 5 A_XScream;
-      ALY1 QRSTUV 5;
-      ALY1 W -1 A_NoBlocking;
-      Stop;
-  }
-}
-
-/*class PatrolPointDeleter : Inventory
-{
-  override void DoEffect()
-  {    
-    if(owner.target && owner.target != owner.goal && owner.goal != null)
-    {
-      SpawnMarineEventHandler Event;
-      Event = SpawnMarineEventHandler(EventHandler.Find("SpawnMarineEventHandler"));
-      if(Event)
-      {
-        owner.goal = null;
-        /*if(Event.pp != null)
-        {
-          Event.pp.RemoveFromHash();
-          Event.pp.Destroy();
-        }
-        owner.setInventory("PatrolPointDeleter", 0);
-      }
-    }
-  }
-}*/
-
-class MyDoomGuy : DoomPlayer {
-  Default{
-    +THRUACTORS
   }
 }
