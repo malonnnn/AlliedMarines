@@ -1,0 +1,453 @@
+version "4.8.0"
+
+#include "ENEMIES"
+#include "MARINES"
+#include "MWEAPS"
+
+class SpawnMarineEventHandler : EventHandler
+{
+  int tid;
+  Actor friend;
+  
+  int pptid;
+  Actor pp;
+  
+  Array<Actor> friends;
+  
+  override void NetworkProcess (ConsoleEvent e)
+  {
+    /*if (e.Name ~== "MarineCheckerEvent"){
+      SpawnMarineEventHandler Event;
+      Event = SpawnMarineEventHandler(EventHandler.Find("SpawnMarineEventHandler"));
+      /*console.printf("goal: "..Event.friend.goal);
+      console.printf("target: "..Event.friend.target);
+      console.printf("plr: "..players[e.player].mo);
+      console.printf("pp: "..Event.pp);
+      //let p = players[e.player].mo;
+      //Event.pp.Teleport((p.pos.x, p.pos.y, p.pos.z), p.angle, 0);
+      //Actor.spawn("teleportfog",(p.pos.x, p.pos.y, p.pos.z));
+      //Thing_SetGoal(Event.tid, Event.pptid, 0, 0);
+      console.printf("goal: "..Event.friend.goal);
+      //console.printf("target: "..Event.friend.target);
+      console.printf("plr: "..players[e.player].mo);
+      console.printf("pp: "..Event.pp);
+      console.printf("master: "..Event.friend.master);
+    }*/
+    
+    if (e.Name ~== "KillMarineKeyEvent"){
+      for(int i = 0; i < friends.Size(); i++){
+        if(friends[i]){
+          SpawnMarineEventHandler Event;
+          Event = SpawnMarineEventHandler(EventHandler.Find("SpawnMarineEventHandler"));
+          if(Event.pp != null){
+            Event.pp.RemoveFromHash();
+            Event.pp.Destroy();
+          }
+          friends[i].RemoveFromHash();
+          friends[i].Destroy();
+        }
+      }
+      friends.Clear();
+    }
+    else if (e.Name ~== "TeleportMarineKeyEvent"){
+
+      // place marines in front of player, about 3 feet, facing away
+      let p = players[e.player].mo;
+      int px = players[e.player].mo.pos.x;
+      int py = players[e.player].mo.pos.y;
+      int pz = players[e.player].mo.pos.z;
+  
+      int pa = Actor.Normalize180(p.angle);
+      if (pa < 0){
+        pa += 360;
+      }
+      
+      int dist = 50;
+      int fx = px + cos(pa) * dist;
+      int fy = py + sin(pa) * dist;
+      
+      // teleport all friends to you
+      int i;
+      bool spawnedAtLeastOne = false;
+      for(i = 0; i < friends.Size(); i++){
+        //friends[i].HandleSpawnFlags();
+        //friends[i].SetFriendPlayer(null);
+        //friends[i].isFriend(friends[i]);
+        friends[i].A_ClearTarget();
+        friends[i].SetStateLabel("Spawn");
+        friends[i].Teleport((fx,fy,pz), pa, 0);
+        //friends[i].target = null;
+        friends[i].goal = null;
+        spawnedAtLeastOne = true;
+
+        // set the marine's standing angle
+        friends[i].Angle = pa;
+        
+        // set their walking angle used by TryWalk() in their Spawn state
+        /*if(pa <= 22.5 || pa >= 337.5){
+          friends[i].movedir = 0; // e
+        }else if(pa > 22.5 && pa <= 67.5){
+          friends[i].movedir = 1; // ne
+        }else if(pa > 67.5 && pa <= 112.5){
+          friends[i].movedir = 2; // n
+        }else if(pa > 112.5 && pa <= 157.5){
+          friends[i].movedir = 3; // nw
+        }else if(pa > 157.5 && pa <= 202.5){
+          friends[i].movedir = 4; // w
+        }else if(pa > 202.5 && pa <= 247.5){
+          friends[i].movedir = 5; // sw
+        }else if(pa > 247.5 && pa <= 292.5){
+          friends[i].movedir = 6; // s
+        }else if(pa > 292.5 && pa < 337.5){
+         friends[i].movedir = 7; // se
+        }*/
+        
+        friends[i].movedir = ((pa+22.5) / 45) % 8;
+        
+        
+      }
+      
+      // spawn fog
+      if(spawnedAtLeastOne)
+      {
+        Actor.Spawn("TeleportFog",(fx,fy,pz));
+      }
+      
+      Console.printf(friends.Size().." marines alive");
+      
+    }
+    
+    else if (e.Name ~== "SpawnMarineKeyEvent")
+    {    
+      // calculate marine spawn position
+      // in front of player, about 3 feet, facing away
+      let p = players[e.player].mo;
+      int px = players[e.player].mo.pos.x;
+      int py = players[e.player].mo.pos.y;
+      int pz = players[e.player].mo.pos.z;
+      int pa = Actor.Normalize180(p.angle);
+      if (pa < 0){
+        pa += 360;
+      }
+      int dist = 50;
+      int fx = px + cos(pa) * dist;
+      int fy = py + sin(pa) * dist;
+   
+      // spawn our friend
+	    switch(Random(1,15)){
+        case 1:
+          friend = Actor.Spawn('MarineAllyPistol', (fx, fy, pz));
+          break;
+        case 2:
+          friend = Actor.Spawn('MarineAllyMG', (fx, fy, pz));
+          break;
+        case 3:
+          friend = Actor.Spawn('MarineAllyCG', (fx, fy, pz));
+          break;
+        case 4:
+          friend = Actor.Spawn('MarineAllySG', (fx, fy, pz));
+          break;
+        case 5:
+          friend = Actor.Spawn('MarineAllyMinigun', (fx, fy, pz));
+          break;
+        case 6:
+          friend = Actor.Spawn('MarineAllyPlasma', (fx, fy, pz));
+          break;
+        case 7:
+          friend = Actor.Spawn('MarineAllyRocket', (fx, fy, pz));
+          break;
+        case 8:
+          friend = Actor.Spawn('MarineAllyBFG9000', (fx, fy, pz));
+          break;
+        case 9:
+          friend = Actor.Spawn('MarineAllySSG', (fx, fy, pz));
+          break;
+        case 10:
+          friend = Actor.Spawn('MarineAllyRailgun', (fx, fy, pz));
+          break;
+        case 11:
+          friend = Actor.Spawn('MarineAllyHSMissile', (fx, fy, pz));
+          break;
+        case 12:
+          friend = Actor.Spawn('MarineAllyGL', (fx, fy, pz));
+          break;
+        case 13:
+          friend = Actor.Spawn('MarineAllySniper', (fx, fy, pz));
+          break;
+        case 14:
+          friend = Actor.Spawn('MarineAllyBFG10K', (fx, fy, pz));
+          break;
+        case 15:
+          friend = Actor.Spawn('MarineAllyFlamethrower', (fx, fy, pz));
+          break;
+        case 16:
+          friend = Actor.Spawn('MarineAllyFist', (fx, fy, pz));
+          break;
+        case 17:
+          friend = Actor.Spawn('MarineAllyChainsaw', (fx, fy, pz));
+          break;
+      }
+      
+      // turn our friend so he's facing away from the player
+      friend.Angle = pa;
+      
+      // set their walking angle used by TryWalk() in their Spawn state
+      /*if(pa <= 22.5 || pa >= 337.5){
+        friend.movedir = 0; // e
+      }else if(pa > 22.5 && pa <= 67.5){
+        friend.movedir = 1; // ne
+      }else if(pa > 67.5 && pa <= 112.5){
+        friend.movedir = 2; // n
+      }else if(pa > 112.5 && pa <= 157.5){
+        friend.movedir = 3; // nw
+      }else if(pa > 157.5 && pa <= 202.5){
+        friend.movedir = 4; // w
+      }else if(pa > 202.5 && pa <= 247.5){
+        friend.movedir = 5; // sw
+      }else if(pa > 247.5 && pa <= 292.5){
+        friend.movedir = 6; // s
+      }else if(pa > 292.5 && pa < 337.5){
+        friend.movedir = 7; // se
+      }*/
+      
+      friend.movedir = ((pa+22.5) / 45) % 8;
+
+      // store our friends in an array, so we can teleport or remove them later
+      friends.Push(friend);
+      Console.printf(friends.Size().." marines");
+      
+      pp = Actor.Spawn('PatrolPoint', (fx, fy, pz));
+      pptid = Level.FindUniqueTID();
+      tid = Level.FindUniqueTID();
+      friend.changeTID(tid);
+      pp.changeTID(pptid);
+      //pp.args[0] = pptid;
+      // loop example, loops through all monsters
+      /*let it = ThinkerIterator.Create("Actor");
+      Actor mo;
+      it.Reinit();
+      while (mo = Actor(it.Next()))
+      {
+        if (mo && mo.bIsMonster && !mo.bFriendly)
+        {
+          mo.changetid(69696970);
+          mo.LookForTid(69696969);
+        }
+      }*/
+    }
+
+  }
+}
+
+class whoKilledFren : EventHandler
+{
+  override void WorldThingDied(WorldEvent e){
+    if(e.Thing.GetSpecies() == "MarineAlly" && e.Thing.bIsMonster == true) {
+    
+      SpawnMarineEventHandler Event;
+      Event = SpawnMarineEventHandler(EventHandler.Find("SpawnMarineEventHandler"));
+      int fren = Event.friends.Find(e.Thing);
+      if (fren != Event.friends.Size()){
+        Event.friends.Delete(fren);
+      }
+      
+      int fx = e.Thing.pos.x;
+      int fy = e.Thing.pos.y;
+      int pz = e.Thing.pos.z;
+      int pa = e.Thing.angle;
+   
+      // spawn our friend
+      //Actor friend;
+	    switch(Random(1,15)){
+        case 1:
+          Event.friend = Actor.Spawn('MarineAllyPistol', (fx, fy, pz));
+          break;
+        case 2:
+          Event.friend = Actor.Spawn('MarineAllyMG', (fx, fy, pz));
+          break;
+        case 3:
+          Event.friend = Actor.Spawn('MarineAllyCG', (fx, fy, pz));
+          break;
+        case 4:
+          Event.friend = Actor.Spawn('MarineAllySG', (fx, fy, pz));
+          break;
+        case 5:
+          Event.friend = Actor.Spawn('MarineAllyMinigun', (fx, fy, pz));
+          break;
+        case 6:
+          Event.friend = Actor.Spawn('MarineAllyPlasma', (fx, fy, pz));
+          break;
+        case 7:
+          Event.friend = Actor.Spawn('MarineAllyRocket', (fx, fy, pz));
+          break;
+        case 8:
+          Event.friend = Actor.Spawn('MarineAllyBFG9000', (fx, fy, pz));
+          break;
+        case 9:
+          Event.friend = Actor.Spawn('MarineAllySSG', (fx, fy, pz));
+          break;
+        case 10:
+          Event.friend = Actor.Spawn('MarineAllyRailgun', (fx, fy, pz));
+          break;
+        case 11:
+          Event.friend = Actor.Spawn('MarineAllyHSMissile', (fx, fy, pz));
+          break;
+        case 12:
+          Event.friend = Actor.Spawn('MarineAllyGL', (fx, fy, pz));
+          break;
+        case 13:
+          Event.friend = Actor.Spawn('MarineAllySniper', (fx, fy, pz));
+          break;
+        case 14:
+          Event.friend = Actor.Spawn('MarineAllyBFG10K', (fx, fy, pz));
+          break;
+        case 15:
+          Event.friend = Actor.Spawn('MarineAllyFlamethrower', (fx, fy, pz));
+          break;
+        case 16:
+          Event.friend = Actor.Spawn('MarineAllyFist', (fx, fy, pz));
+          break;
+        case 17:
+          Event.friend = Actor.Spawn('MarineAllyChainsaw', (fx, fy, pz));
+          break;
+      }
+      
+      //Event.friend = friend;
+      
+      // turn our friend so he's matching the angle the friend died
+      Event.friend.Angle = pa;
+
+      // store our friends in an array, so we can teleport or remove them later
+      Event.friends.Push(Event.friend);
+      Event.friend.Teleport((fx,fy,pz), pa, 1);
+      String died = e.Thing.GetClassName();
+      died.replace("MarineAlly", "");
+      String replacement = Event.friend.GetClassName();
+      replacement.replace("MarineAlly", "");
+      console.printf("-"..died.." +"..replacement);
+      
+      e.Thing.A_QueueCorpse();
+      
+    }else if(e.Thing.bIsMonster == true){
+      if(e.Thing.target != null && e.Thing.target.getspecies() == "MarineAlly"){
+        SpawnMarineEventHandler Event;
+        Event = SpawnMarineEventHandler(EventHandler.Find("SpawnMarineEventHandler"));
+        let corpse = e.Thing;
+        Event.pp.SetOrigin((corpse.pos.x, corpse.pos.y, corpse.pos.z), false);
+        //marine.friend.A_ClearTarget();
+        Event.friend.goal = Event.pp;
+        //e.Thing.A_QueueCorpse();
+      }
+    }
+  }
+}
+
+class CaptiveAlly : SwitchableDecoration
+{
+  Default
+  {
+    Radius 40; //Minimum Activation distance. See CAPTIVES for more Info.
+    Height 56; //Set to match the Allied Marines for better postioning with height checks
+    Health 100;
+    Mass 9001;
+    PAINSOUND "Ally/Pain";
+    DEATHSOUND "Ally/Death";
+    //dropItem "Stimpack";
+    //dropItem "Stimpack";
+    +SOLID
+    +SHOOTABLE
+    +USESPECIAL //Please read CAPTIVES for more info on setting Captives up.
+    +FLOORCLIP
+  }
+  States
+  {
+    Spawn:
+      BDOM A 6;
+      Loop;
+    Pain:
+      BDOM A 6 A_Pain;
+    Death:
+      TNT1 A 0 A_GiveInventory("SpawnerAlly",1);
+      TNT1 A 0 A_Fall;
+      BDOM B 6 A_Scream;
+      BDOM CD 6;
+      BDOM E -1;
+      goto Inactive;
+    Active:
+      TNT1 A 0 A_JumpIfInventory("SpawnerAlly",1,"Inactive");
+      TNT1 A 0
+      {
+        bSolid = false;
+      }
+      CPTV F 10;
+      goto Freedom;
+    Inactive:
+      BDOM E -1;
+      Stop;
+    Freedom:
+      TNT1 A 0 A_GiveInventory("SpawnerAlly",1);
+      CPTV F 20 A_Jump(256,"Freedom1","Freedom2","Freedom3","Freedom4","Freedom5","Freedom6","Freedom7","Freedom8","Freedom9");
+    Freedom1:
+      TNT1 A 0 A_SpawnItemEX("MarineAllyFist",0,0,16);
+      Stop;
+    Freedom2:
+      TNT1 A 0 A_SpawnItemEX("MarineAllyPistol",0,0,16);
+      Stop;
+    Freedom3:
+      TNT1 A 0 A_SpawnItemEX("MarineAllyMG",0,0,16);
+      Stop;
+    Freedom4:
+      TNT1 A 0 A_SpawnItemEX("MarineAllyCG",0,0,16);
+      Stop;
+    Freedom5:
+      TNT1 A 0 A_SpawnItemEX("MarineAllySG",0,0,16);
+      Stop;
+    Freedom6:
+      TNT1 A 0 A_SpawnItemEX("MarineAllyMinigun",0,0,16);
+      Stop;
+    Freedom7:
+      TNT1 A 0 A_SpawnItemEX("MarineAllyChainsaw",0,0,16);
+      Stop;
+    Freedom8:
+      TNT1 A 0 A_SpawnItemEX("MarineAllyPlasma",0,0,16);
+      Stop;
+    Freedom9:
+      TNT1 A 0 A_SpawnItemEX("MarineAllySSG",0,0,16);
+      Stop;
+  }
+}
+
+class SpawnerAlly : Inventory { Default { Inventory.MaxAmount 99; } }
+//Given after Activation or on Death so you can't activate a dead Captive Marine
+
+
+
+
+
+/*class PatrolPointDeleter : Inventory
+{
+  override void DoEffect()
+  {    
+    if(owner.target && owner.target != owner.goal && owner.goal != null)
+    {
+      SpawnMarineEventHandler Event;
+      Event = SpawnMarineEventHandler(EventHandler.Find("SpawnMarineEventHandler"));
+      if(Event)
+      {
+        owner.goal = null;
+        /*if(Event.pp != null)
+        {
+          Event.pp.RemoveFromHash();
+          Event.pp.Destroy();
+        }
+        owner.setInventory("PatrolPointDeleter", 0);
+      }
+    }
+  }
+}*/
+
+class MyDoomGuy : DoomPlayer {
+  Default{
+    +THRUACTORS
+  }
+}
